@@ -2,9 +2,11 @@
   "name": "owntrack",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
+  "main": "dist/owntrack.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "rollup -c rollup.config.js -w"
   },
   "repository": {
     "type": "git",
@@ -15,5 +17,9 @@
   "bugs": {
     "url": "https://github.com/mekkanix/owntrack/issues"
   },
-  "homepage": "https://github.com/mekkanix/owntrack#readme"
+  "homepage": "https://github.com/mekkanix/owntrack#readme",
+  "devDependencies": {
+    "rollup-plugin-serve": "^2.0.2",
+    "vite": "^4.4.3"
+  }
 }
