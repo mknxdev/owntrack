@@ -1,15 +1,18 @@
 import serve from 'rollup-plugin-serve'
+import typescript from '@rollup/plugin-typescript'
 
 export default {
-  input: 'src/index.js',
+  input: 'src/index.ts',
   output: {
-    file: 'dist/owntrack.js',
+    name: 'OwnTrack',
+    file: 'public/dist/owntrack.js',
     format: 'umd'
   },
   plugins: [
     serve({
       contentBase: 'public',
       port: 8080,
-    })
+    }),
+    typescript(),
   ]
 }
