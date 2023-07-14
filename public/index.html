@@ -3,10 +3,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OwnTrack</title>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JSRE6N82F5');
+  </script>
   <script src="/dist/owntrack.js"></script>
   <script>
     const ot = OwnTrack({
-      services: ['matomo']
+      services: [
+        {name: 'matomo', label: 'Matomo', }
+      ]
     })
   </script>
 </head>
