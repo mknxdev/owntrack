@@ -1,22 +1,40 @@
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OwnTrack</title>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-JSRE6N82F5');
-  </script>
-  <script src="/dist/owntrack.js"></script>
-  <script>
-    const ot = OwnTrack({
-      services: [
-        {name: 'matomo', label: 'Matomo', }
-      ]
-    })
-  </script>
-</head>
-<body></body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OwnTrack</title>
+    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5"></script>
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag() {
+        dataLayer.push(arguments)
+      }
+      gtag('js', new Date())
+      gtag('config', 'G-JSRE6N82F5')
+    </script> -->
+    <script src="/dist/owntrack.js"></script>
+    <script>
+      const ot = OwnTrack({
+        services: [
+          {
+            name: 'ga',
+            label: 'Google Analytics',
+            trackingScriptUrl:
+              'https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5',
+            trackingCode: () => {
+              window.dataLayer = window.dataLayer || []
+              function gtag() {
+                dataLayer.push(arguments)
+              }
+              gtag('js', new Date())
+              gtag('config', 'G-JSRE6N82F5')
+            },
+          },
+        ],
+      })
+      // const ot2 = OwnTrack()
+      // console.log(ot, ot2)
+    </script>
+  </head>
+  <body></body>
 </html>

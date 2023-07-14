@@ -3,11 +3,11 @@ import { TrackingServiceConsent } from './types'
 import ls from './helpers/ls'
 // import * as matomo from '@/services/mtm'
 
-declare global {
-  interface Window {
-    _OT: OwnTrack
-  }
-}
+// declare global {
+//   interface Window {
+//     _OT: GDPR
+//   }
+// }
 type TrackingActionItem = {
   service: string
   fnName: string
@@ -22,7 +22,7 @@ const TRACKERS_MODULES = {
   matomo,
 }
 
-class OwnTrack {
+class GDPR {
   _consents: TrackingServiceConsent[] = []
   _pendingActions: TrackingActionItem[] = []
 
@@ -93,4 +93,4 @@ class OwnTrack {
   }
 }
 
-export default () => (window._OT = window._OT || new OwnTrack())
+// export default () => (window._OT = window._OT || new GDPR())
