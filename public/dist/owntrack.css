@@ -1,9 +1,14 @@
 .ot-root,
-.ot-root button {
+.ot-root button.ot-btn {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 15px;
 }
-.ot-root button {
+.ot-root svg.ot-icn {
+  width: 16px;
+  height: 16px;
+}
+
+.ot-root button.ot-btn {
   padding: 10px 14px;
   border: 0;
   border-radius: 5px;
@@ -11,33 +16,36 @@
   text-transform: uppercase;
   font-weight: 700;
 }
-.ot-root button.ot-ghost {
+.ot-root button.ot-btn.ot-ghost {
   background-color: transparent;
 }
-.ot-root button.ot-ghost:hover {
+.ot-root button.ot-btn.ot-ghost:hover {
   background-color: #eeeeee;
 }
-.ot-root button.ot-success {
+.ot-root button.ot-btn.ot-success {
   background-color: #45b051;
   color: #ffffff;
 }
-.ot-root button.ot-success:hover {
+.ot-root button.ot-btn.ot-success:hover {
   background-color: #259031;
 }
-.ot-root button.ot-error {
+.ot-root button.ot-btn.ot-error {
   background-color: #d63a3a;
   color: #ffffff;
 }
-.ot-root button.ot-error:hover {
+.ot-root button.ot-btn.ot-error:hover {
   background-color: #b61a1a;
 }
 
-.ot-root .ot-entrywrapper {
+/* OT: Entry */
+
+.ot-root .ot-entry-wrapper {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   padding: 12px;
+  z-index: 1000;
 }
 .ot-root .ot-entry {
   display: flex;
@@ -59,4 +67,38 @@
 .ot-root .ot-entry .ot-entry__btns {
   display: flex;
   gap: 10px;
+}
+
+/* OT: Settings */
+
+.ot-root .ot-settings-overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 990;
+  padding: 50px 50px;
+  background-color: rgba(0, 0, 0, 0.25);
+}
+.ot-root .ot-settings {
+  position: relative;
+  width: 800px;
+  max-width: 100%;
+  height: 400px;
+  margin: 0 auto;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 5px #d1d1d1;
+}
+.ot-root .ot-settings .ot-settings__close {
+  padding: 8px;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.ot-root .ot-settings .ot-settings__close:hover {
+  background-color: #eeeeee;
 }

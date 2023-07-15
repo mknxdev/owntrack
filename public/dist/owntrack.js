@@ -118,21 +118,54 @@
         }
     }
 
+    const NS = 'http://www.w3.org/2000/svg';
+    const getIconCloseElement = () => {
+        const svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('version', '1.1');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        const l1 = document.createElementNS(NS, 'line');
+        l1.setAttribute('x1', '1');
+        l1.setAttribute('y1', '23');
+        l1.setAttribute('x2', '23');
+        l1.setAttribute('y2', '1');
+        const l2 = document.createElementNS(NS, 'line');
+        l2.setAttribute('x1', '1');
+        l2.setAttribute('y1', '1');
+        l2.setAttribute('x2', '23');
+        l2.setAttribute('y2', '23');
+        l1.setAttribute('stroke-width', '3');
+        l2.setAttribute('stroke-width', '3');
+        l1.setAttribute('stroke', '#000000');
+        l2.setAttribute('stroke', '#000000');
+        svg.append(l1);
+        svg.append(l2);
+        return svg;
+    };
+    const generateIconElement = (icon) => {
+        return {
+            close: getIconCloseElement(),
+        }[icon];
+    };
+
     class UIManager {
         constructor() {
             this._isConsentReviewed = false;
+            this._dom = {
+                root: document.createElement('div'),
+                settingsRoot: document.createElement('div'),
+            };
             this._initBase();
             this._initEntry();
-            this._initSettingsModal();
+            this._initSettings();
             window.addEventListener('DOMContentLoaded', this._mount.bind(this));
         }
         _initBase() {
-            this._elRoot = document.createElement('div');
-            this._elRoot.classList.add('ot-root');
+            this._dom.root = document.createElement('div');
+            this._dom.root.classList.add('ot-root');
         }
         _initEntry() {
             const elEntryWrapper = document.createElement('div');
-            elEntryWrapper.classList.add('ot-entrywrapper');
+            elEntryWrapper.classList.add('ot-entry-wrapper');
             const elEntry = document.createElement('div');
             elEntry.classList.add('ot-entry');
             const elEntryNotice = document.createElement('div');
@@ -141,9 +174,17 @@
                 '<p>This website uses cookies &amp; analytics for tracking and/or advertising purposes. You can choose to accept them or not.</p>';
             elEntry.append(elEntryNotice);
             const btns = [
-                { t: 'Settings', c: ['settings', 'ot-ghost'], h: this._onSettingsClick },
-                { t: 'Deny', c: ['deny', 'ot-error'], h: this._onDenyAllClick },
-                { t: 'Allow', c: ['allow', 'ot-success'], h: this._onAllowAllClick },
+                {
+                    t: 'Settings',
+                    c: ['settings', 'ot-btn', 'ot-ghost'],
+                    h: this._onOpenSettingsClick,
+                },
+                { t: 'Deny', c: ['deny', 'ot-btn', 'ot-error'], h: this._onDenyAllClick },
+                {
+                    t: 'Allow',
+                    c: ['allow', 'ot-btn', 'ot-success'],
+                    h: this._onAllowAllClick,
+                },
             ];
             const elEntryBtns = document.createElement('div');
             elEntryBtns.classList.add('ot-entry__btns');
@@ -156,10 +197,27 @@
             }
             elEntry.append(elEntryBtns);
             elEntryWrapper.append(elEntry);
-            this._elRoot.append(elEntryWrapper);
+            this._dom.root.append(elEntryWrapper);
         }
-        _initSettingsModal() { }
-        _onSettingsClick() { }
+        _initSettings() {
+            this._dom.settingsRoot.classList.add('ot-settings-overlay');
+            const elSettings = document.createElement('div');
+            elSettings.classList.add('ot-settings');
+            const elCloseBtn = document.createElement('div');
+            elCloseBtn.classList.add('ot-settings__close');
+            elCloseBtn.addEventListener('click', this._onCloseSettingsClick.bind(this));
+            const elClose = generateIconElement('close');
+            elClose.classList.add('ot-icn');
+            elCloseBtn.append(elClose);
+            elSettings.append(elCloseBtn);
+            this._dom.settingsRoot.append(elSettings);
+        }
+        _onOpenSettingsClick() {
+            console.log('open settings');
+        }
+        _onCloseSettingsClick() {
+            console.log('close settings');
+        }
         _onAllowAllClick() {
             console.log('allowed');
         }
@@ -167,7 +225,8 @@
             console.log('denied');
         }
         _mount() {
-            document.body.append(this._elRoot);
+            this._dom.root.append(this._dom.settingsRoot);
+            document.body.append(this._dom.root);
         }
         setConsentReviewed(value) {
             this._isConsentReviewed = value;
