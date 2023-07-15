@@ -2,11 +2,10 @@ import { generateIconElement } from './helpers/ui'
 
 export default class UIManager {
   _isConsentReviewed = false
-  _dom: { root: Element; settingsRoot: Element } = {
+  _d: { root: Element; settingsRoot: Element } = {
     root: document.createElement('div'),
     settingsRoot: document.createElement('div'),
   }
-  _elRoot: Element
 
   constructor() {
     this._initBase()
@@ -16,8 +15,8 @@ export default class UIManager {
   }
 
   _initBase() {
-    this._dom.root = document.createElement('div')
-    this._dom.root.classList.add('ot-root')
+    this._d.root = document.createElement('div')
+    this._d.root.classList.add('ot-root')
   }
 
   _initEntry() {
@@ -34,13 +33,17 @@ export default class UIManager {
       {
         t: 'Settings',
         c: ['settings', 'ot-btn', 'ot-ghost'],
-        h: this._onOpenSettingsClick,
+        h: this._onOpenSettingsClick.bind(this),
       },
-      { t: 'Deny', c: ['deny', 'ot-btn', 'ot-error'], h: this._onDenyAllClick },
+      {
+        t: 'Deny',
+        c: ['deny', 'ot-btn', 'ot-error'],
+        h: this._onDenyAllClick.bind(this),
+      },
       {
         t: 'Allow',
         c: ['allow', 'ot-btn', 'ot-success'],
-        h: this._onAllowAllClick,
+        h: this._onAllowAllClick.bind(this),
       },
     ]
     const elEntryBtns = document.createElement('div')
@@ -54,11 +57,11 @@ export default class UIManager {
     }
     elEntry.append(elEntryBtns)
     elEntryWrapper.append(elEntry)
-    this._dom.root.append(elEntryWrapper)
+    this._d.root.append(elEntryWrapper)
   }
 
   _initSettings() {
-    this._dom.settingsRoot.classList.add('ot-settings-overlay')
+    this._d.settingsRoot.classList.add('ot-settings-overlay')
     const elSettings = document.createElement('div')
     elSettings.classList.add('ot-settings')
     const elCloseBtn = document.createElement('div')
@@ -68,15 +71,27 @@ export default class UIManager {
     elClose.classList.add('ot-icn')
     elCloseBtn.append(elClose)
     elSettings.append(elCloseBtn)
-    this._dom.settingsRoot.append(elSettings)
+    this._d.settingsRoot.append(elSettings)
   }
 
   _onOpenSettingsClick() {
-    console.log('open settings')
+    for (const i in this._d.root.children)
+      if (
+        !this._d.root.children
+          .item(Number(i))
+          .classList.contains('ot-settings-overlay')
+      )
+        this._d.root.append(this._d.settingsRoot)
   }
 
-  _onCloseSettingsClick() {
-    console.log('close settings')
+  _onCloseSettingsClick(): void {
+    for (const i in this._d.root.children)
+      if (
+        this._d.root.children
+          .item(Number(i))
+          .classList.contains('ot-settings-overlay')
+      )
+        this._d.settingsRoot.remove()
   }
 
   _onAllowAllClick() {
@@ -88,8 +103,8 @@ export default class UIManager {
   }
 
   _mount() {
-    this._dom.root.append(this._dom.settingsRoot)
-    document.body.append(this._dom.root)
+    this._d.root.append(this._d.settingsRoot)
+    document.body.append(this._d.root)
   }
 
   setConsentReviewed(value: boolean): void {
