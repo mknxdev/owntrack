@@ -141,6 +141,12 @@
         svg.append(l2);
         return svg;
     };
+    const createElmt = (tag, classes = []) => {
+        const element = document.createElement(tag);
+        for (const c of classes)
+            element.classList.add(c);
+        return element;
+    };
     const generateIconElement = (icon) => {
         return {
             close: getIconCloseElement(),
@@ -149,27 +155,30 @@
 
     class UIManager {
         constructor() {
+            this._services = [];
             this._isConsentReviewed = false;
+            // _d: DOM
+            // _d.r: root
+            // _d.sr: settings root
+            // _d.srvr: services root
             this._d = {
-                root: document.createElement('div'),
-                settingsRoot: document.createElement('div'),
+                r: createElmt('div'),
+                sr: createElmt('div'),
+                srvr: createElmt('div'),
             };
             this._initBase();
             this._initEntry();
             this._initSettings();
-            window.addEventListener('DOMContentLoaded', this._mount.bind(this));
+            this._initServices();
         }
         _initBase() {
-            this._d.root = document.createElement('div');
-            this._d.root.classList.add('ot-root');
+            this._d.r = document.createElement('div');
+            this._d.r.classList.add('ot-root');
         }
         _initEntry() {
-            const elEntryWrapper = document.createElement('div');
-            elEntryWrapper.classList.add('ot-entry-wrapper');
-            const elEntry = document.createElement('div');
-            elEntry.classList.add('ot-entry');
-            const elEntryNotice = document.createElement('div');
-            elEntryNotice.classList.add('ot-entry__notice');
+            const elEntryWrapper = createElmt('div', ['ot-entry-wrapper']);
+            const elEntry = createElmt('div', ['ot-entry']);
+            const elEntryNotice = createElmt('div', ['ot-entry__notice']);
             elEntryNotice.innerHTML =
                 '<p>This website uses cookies &amp; analytics for tracking and/or advertising purposes. You can choose to accept them or not.</p>';
             elEntry.append(elEntryNotice);
@@ -190,8 +199,7 @@
                     h: this._onAllowAllClick.bind(this),
                 },
             ];
-            const elEntryBtns = document.createElement('div');
-            elEntryBtns.classList.add('ot-entry__btns');
+            const elEntryBtns = createElmt('div', ['ot-entry__btns']);
             for (const btn of btns) {
                 const elEntryBtn = document.createElement('button');
                 btn.c.forEach((c) => elEntryBtn.classList.add(c));
@@ -201,34 +209,73 @@
             }
             elEntry.append(elEntryBtns);
             elEntryWrapper.append(elEntry);
-            this._d.root.append(elEntryWrapper);
+            this._d.r.append(elEntryWrapper);
         }
         _initSettings() {
-            this._d.settingsRoot.classList.add('ot-settings-overlay');
-            const elSettings = document.createElement('div');
-            elSettings.classList.add('ot-settings');
-            const elCloseBtn = document.createElement('div');
-            elCloseBtn.classList.add('ot-settings__close');
+            this._d.sr.classList.add('ot-settings-overlay');
+            const elSettings = createElmt('div', ['ot-settings']);
+            // "close" btn
+            const elCloseBtn = createElmt('div', ['ot-settings__close']);
             elCloseBtn.addEventListener('click', this._onCloseSettingsClick.bind(this));
             const elClose = generateIconElement('close');
             elClose.classList.add('ot-icn');
             elCloseBtn.append(elClose);
             elSettings.append(elCloseBtn);
-            this._d.settingsRoot.append(elSettings);
+            this._d.sr.append(elSettings);
+            // content
+            let content;
+            for (const i in this._d.sr.children)
+                if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
+                    content = this._d.sr.children.item(Number(i));
+            const elHeadline = createElmt('h1');
+            elHeadline.innerText = 'Tracking Settings';
+            const elNotice = createElmt('p', ['ot-settings__notice']);
+            elNotice.innerHTML =
+                'Here you can manage tracking/analytics acceptance for each service.<br/> You can also accept or deny tracking for all services at once.';
+            const elGActions = createElmt('div', ['ot-settings__main-actions']);
+            const btns = [
+                {
+                    t: 'Deny all',
+                    c: ['deny', 'ot-btn', 'ot-error'],
+                    h: this._onDenyAllClick.bind(this),
+                },
+                {
+                    t: 'Allow all',
+                    c: ['allow', 'ot-btn', 'ot-success'],
+                    h: this._onAllowAllClick.bind(this),
+                },
+            ];
+            const elGActionsBtns = createElmt('div', [
+                'ot-settings__main-actions__btns',
+            ]);
+            for (const btn of btns) {
+                const elEntryBtn = document.createElement('button');
+                btn.c.forEach((c) => elEntryBtn.classList.add(c));
+                elEntryBtn.innerText = btn.t;
+                elEntryBtn.addEventListener('click', btn.h);
+                elGActionsBtns.append(elEntryBtn);
+            }
+            elGActions.append(elGActionsBtns);
+            content.append(elHeadline);
+            content.append(elNotice);
+            content.append(elGActions);
+        }
+        _initServices() {
+            this._d.srvr.classList.add('ot-settings__services');
         }
         _onOpenSettingsClick() {
-            for (const i in this._d.root.children)
-                if (!this._d.root.children
+            for (const i in this._d.r.children)
+                if (!this._d.r.children
                     .item(Number(i))
                     .classList.contains('ot-settings-overlay'))
-                    this._d.root.append(this._d.settingsRoot);
+                    this._d.r.append(this._d.sr);
         }
         _onCloseSettingsClick() {
-            for (const i in this._d.root.children)
-                if (this._d.root.children
+            for (const i in this._d.r.children)
+                if (this._d.r.children
                     .item(Number(i))
                     .classList.contains('ot-settings-overlay'))
-                    this._d.settingsRoot.remove();
+                    this._d.sr.remove();
         }
         _onAllowAllClick() {
             console.log('allowed');
@@ -236,9 +283,21 @@
         _onDenyAllClick() {
             console.log('denied');
         }
-        _mount() {
-            this._d.root.append(this._d.settingsRoot);
-            document.body.append(this._d.root);
+        mount() {
+            let settings;
+            for (const i in this._d.sr.children)
+                if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
+                    settings = this._d.sr.children.item(Number(i));
+            settings.append(this._d.srvr);
+            this._d.r.append(this._d.sr);
+            document.body.append(this._d.r);
+        }
+        setTrackingServices(services) {
+            this._services = services;
+            for (const service of services) {
+                createElmt('div', ['ot-settings__service']);
+                console.log(service);
+            }
         }
         setConsentReviewed(value) {
             this._isConsentReviewed = value;
@@ -249,13 +308,20 @@
         constructor(config) {
             this._trackingGuard = new TrackingGuard();
             this._uiManager = new UIManager();
-            this._services = {};
-            for (const srv of config.services) {
-                this._services[srv.name] = this._trackingGuard.wrapService(srv);
+            this._services = [];
+            for (const service of config.services) {
+                this._services.push({
+                    name: service.name,
+                    srv: this._trackingGuard.wrapService(service),
+                });
             }
             this._trackingGuard.save();
+            this._uiManager.setTrackingServices(this._services);
             this._uiManager.setConsentReviewed(this._trackingGuard.isReviewed());
-            console.log(this._uiManager);
+            window.addEventListener('DOMContentLoaded', this._onReady.bind(this));
+        }
+        _onReady() {
+            this._uiManager.mount();
         }
         service(name) {
             console.log(this);

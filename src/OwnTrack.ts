@@ -1,21 +1,28 @@
-import { Config } from './types'
+import { Config, OTService } from './types'
 import TrackingGuard from './TrackingGuard'
 import UIManager from './UIManager'
-
-type Services = object
+import ServiceWrapper from './ServiceWrapper'
 
 export default class OwnTrack {
   _trackingGuard: TrackingGuard = new TrackingGuard()
   _uiManager: UIManager = new UIManager()
-  _services: Services = {}
+  _services: OTService[] = []
 
   constructor(config: Config) {
-    for (const srv of config.services) {
-      this._services[srv.name] = this._trackingGuard.wrapService(srv)
+    for (const service of config.services) {
+      this._services.push({
+        name: service.name,
+        srv: this._trackingGuard.wrapService(service),
+      })
     }
     this._trackingGuard.save()
+    this._uiManager.setTrackingServices(this._services)
     this._uiManager.setConsentReviewed(this._trackingGuard.isReviewed())
-    console.log(this._uiManager)
+    window.addEventListener('DOMContentLoaded', this._onReady.bind(this))
+  }
+
+  _onReady() {
+    this._uiManager.mount()
   }
 
   service(name: string) {

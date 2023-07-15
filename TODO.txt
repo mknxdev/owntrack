@@ -1,0 +1,14 @@
+>>> P0
+
+- Allow user-defined setting (true/false) of "mandatory cookies" section
+- Integrate a locale system (fr, en) for predefined wordings
+- Allow user-defined OT storing system (LS, cookie)
+
+>>> P1
+
+- Integrate a wording customization system
+- Provide CSS vars & OT-related classes list to allow styling customization
+
+>>> P2
+
+- Create a contributing repo for i18n languages

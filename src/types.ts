@@ -1,12 +1,18 @@
+import ServiceWrapper from './ServiceWrapper'
+
 export type ConfigService = {
   name: string
   label?: string
   trackingScriptUrl: string
   onInit: Function
-  handlers: Object
+  handlers: object
 }
 export type Config = {
   services: ConfigService[]
+}
+export type OTService = {
+  name: string
+  srv: ServiceWrapper
 }
 export type TrackingServiceConsent = {
   srv: string

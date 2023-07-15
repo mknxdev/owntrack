@@ -2,6 +2,7 @@
 .ot-root button.ot-btn {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 15px;
+  line-height: 1.2;
 }
 .ot-root svg.ot-icn {
   width: 16px;
@@ -83,10 +84,10 @@
 }
 .ot-root .ot-settings {
   position: relative;
-  width: 800px;
+  width: 880px;
   max-width: 100%;
-  height: 400px;
   margin: 0 auto;
+  padding: 60px 15px 50px 15px;
   border-radius: 8px;
   background-color: #ffffff;
   box-shadow: 0 1px 5px #d1d1d1;
@@ -94,11 +95,32 @@
 .ot-root .ot-settings .ot-settings__close {
   padding: 8px;
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 15px;
+  right: 15px;
   border-radius: 50%;
   cursor: pointer;
 }
 .ot-root .ot-settings .ot-settings__close:hover {
   background-color: #eeeeee;
+}
+.ot-root .ot-settings h1 {
+  margin: 0 0 30px;
+  text-align: center;
+  font-size: 28px;
+}
+.ot-root .ot-settings p.ot-settings__notice {
+  margin: 0 auto;
+  width: 600px;
+  text-align: center;
+}
+
+.ot-root .ot-settings .ot-settings__main-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 30px 0;
+}
+.ot-root .ot-settings .ot-settings__main-actions__btns {
+  display: flex;
+  gap: 15px;
 }
