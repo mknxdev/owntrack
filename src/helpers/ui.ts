@@ -23,6 +23,12 @@ const getIconCloseElement = (): Element => {
   return svg
 }
 
+export const createElmt = (tag: string, classes: string[] = []) => {
+  const element: Element = document.createElement(tag)
+  for (const c of classes) element.classList.add(c)
+  return element
+}
+
 export const generateIconElement = (icon: string): Element => {
   return {
     close: getIconCloseElement(),

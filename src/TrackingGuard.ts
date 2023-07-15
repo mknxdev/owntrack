@@ -24,7 +24,7 @@ export default class TrackingGuard {
     trackingScriptUrl,
     onInit,
     handlers,
-  }: ConfigService) {
+  }: ConfigService): ServiceWrapper {
     // console.log(name, label, trackingScriptUrl, handlers)
     const srv = new ServiceWrapper(name, onInit)
     for (const [fnName, fn] of Object.entries(handlers))
@@ -33,7 +33,7 @@ export default class TrackingGuard {
     return srv
   }
 
-  save() {
+  save(): void {
     const consents = this._services.map((s: ServiceWrapper) => ({
       srv: s.name,
       v: this._consents.some((c) => c.srv === s.name)
