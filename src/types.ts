@@ -2,7 +2,8 @@ export type ConfigService = {
   name: string
   label?: string
   trackingScriptUrl: string
-  handlers: Object & { init: Function }
+  onInit: Function
+  handlers: Object
 }
 export type Config = {
   services: ConfigService[]

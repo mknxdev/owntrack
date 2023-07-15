@@ -22,12 +22,12 @@
                     throw new Error(`OwnTrack: Service: 'trackingScriptUrl' is required.`);
                 if (typeof srv.trackingScriptUrl !== 'string')
                     throw new Error(`OwnTrack: Service: 'trackingScriptUrl' must be of type string.`);
+                if (!srv.onInit || typeof srv.onInit !== 'function')
+                    throw new Error(`OwnTrack: Service: 'onInit' callback is required.`);
                 if (!srv.handlers)
                     throw new Error(`OwnTrack: Service: 'handlers' is required.`);
                 if (typeof srv.handlers !== 'object')
                     throw new Error(`OwnTrack: Service: 'handlers' must be an object.`);
-                if (!srv.handlers.init || typeof srv.handlers.init !== 'function')
-                    throw new Error(`OwnTrack: Service: 'handlers' must contain an 'init' method.`);
             }
         }
         catch (err) {
@@ -69,8 +69,12 @@
     };
 
     class ServiceWrapper {
-        constructor(name) {
-            this.name = name;
+        constructor(name, onInit) {
+            this._n = name;
+            this._onInit = onInit;
+        }
+        get name() {
+            return this._n;
         }
     }
 
@@ -81,27 +85,27 @@
             this._consents = [];
             this._consents = ls.getItem(LS_ITEM_NAME) || [];
         }
-        _setGuard(handler) {
+        _setFnGuard(handler) {
             return () => {
-                handler();
+                return handler();
             };
         }
-        wrapService({ name, label, trackingScriptUrl, handlers }) {
+        wrapService({ name, label, trackingScriptUrl, onInit, handlers, }) {
             // console.log(name, label, trackingScriptUrl, handlers)
-            const srv = new ServiceWrapper(name);
+            const srv = new ServiceWrapper(name, onInit);
             for (const [fnName, fn] of Object.entries(handlers))
-                srv[fnName] = this._setGuard(fn);
+                srv[fnName] = this._setFnGuard(fn);
             this._services.push(srv);
             return srv;
         }
         save() {
-            const consents = this._services.map((service) => ({
-                srv: service.name,
-                v: this._consents.some((c) => c.srv === service.name)
-                    ? this._consents.filter((c) => c.srv === service.name)[0].v
+            const consents = this._services.map((s) => ({
+                srv: s.name,
+                v: this._consents.some((c) => c.srv === s.name)
+                    ? this._consents.filter((c) => c.srv === s.name)[0].v
                     : false,
-                r: this._consents.some((c) => c.srv === service.name)
-                    ? this._consents.filter((c) => c.srv === service.name)[0].r
+                r: this._consents.some((c) => c.srv === s.name)
+                    ? this._consents.filter((c) => c.srv === s.name)[0].r
                     : false,
             }));
             ls.setItem(LS_ITEM_NAME, consents);
@@ -118,7 +122,7 @@
             this._trackingGuard.save();
         }
         service(name) {
-            console.log(this._services);
+            console.log(this);
         }
     }
 

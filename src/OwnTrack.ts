@@ -16,6 +16,6 @@ export default class OwnTrack {
   }
 
   service(name: string) {
-    console.log(this._services)
+    console.log(this)
   }
 }

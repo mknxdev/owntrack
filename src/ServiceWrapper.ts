@@ -1,7 +1,13 @@
 export default class ServiceWrapper {
-  name: string
+  _n: string
+  _onInit: Function
 
-  constructor(name) {
-    this.name = name
+  constructor(name: string, onInit: Function) {
+    this._n = name
+    this._onInit = onInit
+  }
+
+  get name() {
+    return this._n
   }
 }

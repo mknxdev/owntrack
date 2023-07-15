@@ -21,14 +21,12 @@ export const checkForValidInit = (config: Config): boolean => {
         throw new Error(
           `OwnTrack: Service: 'trackingScriptUrl' must be of type string.`,
         )
+      if (!srv.onInit || typeof srv.onInit !== 'function')
+        throw new Error(`OwnTrack: Service: 'onInit' callback is required.`)
       if (!srv.handlers)
         throw new Error(`OwnTrack: Service: 'handlers' is required.`)
       if (typeof srv.handlers !== 'object')
         throw new Error(`OwnTrack: Service: 'handlers' must be an object.`)
-      if (!srv.handlers.init || typeof srv.handlers.init !== 'function')
-        throw new Error(
-          `OwnTrack: Service: 'handlers' must contain an 'init' method.`,
-        )
     }
   } catch (err) {
     console.error(err.message)
