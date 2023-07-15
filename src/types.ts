@@ -1,16 +1,16 @@
-type ConfigService = {
+export type ConfigService = {
   name: string
-  label: string
+  label?: string
   trackingScriptUrl: string
-  trckingCode: Function
+  handlers: Object & { init: Function }
 }
 export type Config = {
   services: ConfigService[]
 }
 export type TrackingServiceConsent = {
-  name: string
-  consent: boolean
-  reviewed: boolean
+  srv: string
+  v: boolean
+  r: boolean
 }
 export type TrackingService = TrackingServiceConsent & {
   label: string
