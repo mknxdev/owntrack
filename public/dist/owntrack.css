@@ -1,7 +1,62 @@
-.ot-root {
+.ot-root,
+.ot-root button {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 15px;
+}
+.ot-root button {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.ot-root button.ot-ghost {
+  background-color: transparent;
+}
+.ot-root button.ot-ghost:hover {
+  background-color: #eeeeee;
+}
+.ot-root button.ot-success {
+  background-color: #45b051;
+  color: #ffffff;
+}
+.ot-root button.ot-success:hover {
+  background-color: #259031;
+}
+.ot-root button.ot-error {
+  background-color: #d63a3a;
+  color: #ffffff;
+}
+.ot-root button.ot-error:hover {
+  background-color: #b61a1a;
+}
+
+.ot-root .ot-entrywrapper {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: red;
+  padding: 12px;
+}
+.ot-root .ot-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0 1px 5px #d1d1d1;
+}
+.ot-root .ot-entry .ot-entry__notice {
+  display: flex;
+  align-items: center;
+}
+.ot-root .ot-entry .ot-entry__notice p {
+  margin: 0;
+}
+.ot-root .ot-entry .ot-entry__btns {
+  display: flex;
+  gap: 10px;
 }
