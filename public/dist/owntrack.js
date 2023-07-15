@@ -71,12 +71,13 @@
     };
 
     class ServiceWrapper {
-        constructor(name, onInit) {
-            this._n = name;
+        constructor(name, label, onInit) {
+            this.n = name;
+            this._l = label;
             this._onInit = onInit;
         }
         get name() {
-            return this._n;
+            return this._l || this.n;
         }
     }
 
@@ -94,27 +95,34 @@
         }
         wrapService({ name, label, trackingScriptUrl, onInit, handlers, }) {
             // console.log(name, label, trackingScriptUrl, handlers)
-            const srv = new ServiceWrapper(name, onInit);
+            const srv = new ServiceWrapper(name, label, onInit);
             for (const [fnName, fn] of Object.entries(handlers))
                 srv[fnName] = this._setFnGuard(fn);
             this._services.push(srv);
             return srv;
         }
         save() {
-            const consents = this._services.map((s) => ({
-                srv: s.name,
-                v: this._consents.some((c) => c.srv === s.name)
-                    ? this._consents.filter((c) => c.srv === s.name)[0].v
+            const consents = this._services.map((srv) => ({
+                srv: srv.n,
+                v: this._consents.some((c) => c.srv === srv.n)
+                    ? this._consents.filter((c) => c.srv === srv.n)[0].v
                     : false,
-                r: this._consents.some((c) => c.srv === s.name)
-                    ? this._consents.filter((c) => c.srv === s.name)[0].r
+                r: this._consents.some((c) => c.srv === srv.n)
+                    ? this._consents.filter((c) => c.srv === srv.n)[0].r
                     : false,
             }));
             this._consents = consents;
             ls.setItem(LS_ITEM_NAME, consents);
         }
-        isReviewed() {
-            return this._consents.every((consent) => consent.r);
+        isReviewed(service = '') {
+            if (!service)
+                return this._consents.every((consent) => consent.r);
+            return !!this._consents.filter((consent) => consent.srv === service && consent.r).length;
+        }
+        hasConsent(service = '') {
+            if (!service)
+                return this._consents.every((consent) => consent.v);
+            return !!this._consents.filter((consent) => consent.srv === service && consent.v).length;
         }
     }
 
@@ -203,7 +211,7 @@
             for (const btn of btns) {
                 const elEntryBtn = document.createElement('button');
                 btn.c.forEach((c) => elEntryBtn.classList.add(c));
-                elEntryBtn.innerText = btn.t;
+                elEntryBtn.innerHTML = btn.t;
                 elEntryBtn.addEventListener('click', btn.h);
                 elEntryBtns.append(elEntryBtn);
             }
@@ -228,7 +236,7 @@
                 if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
                     content = this._d.sr.children.item(Number(i));
             const elHeadline = createElmt('h1');
-            elHeadline.innerText = 'Tracking Settings';
+            elHeadline.innerHTML = 'Tracking Settings';
             const elNotice = createElmt('p', ['ot-settings__notice']);
             elNotice.innerHTML =
                 'Here you can manage tracking/analytics acceptance for each service.<br/> You can also accept or deny tracking for all services at once.';
@@ -249,9 +257,8 @@
                 'ot-settings__main-actions__btns',
             ]);
             for (const btn of btns) {
-                const elEntryBtn = document.createElement('button');
-                btn.c.forEach((c) => elEntryBtn.classList.add(c));
-                elEntryBtn.innerText = btn.t;
+                const elEntryBtn = createElmt('button', btn.c);
+                elEntryBtn.innerHTML = btn.t;
                 elEntryBtn.addEventListener('click', btn.h);
                 elGActionsBtns.append(elEntryBtn);
             }
@@ -283,6 +290,12 @@
         _onDenyAllClick() {
             console.log('denied');
         }
+        _onAllowServiceClick(service) {
+            console.log('allowed', service);
+        }
+        _onDenyServicelClick(service) {
+            console.log('denied', service);
+        }
         mount() {
             let settings;
             for (const i in this._d.sr.children)
@@ -292,11 +305,53 @@
             this._d.r.append(this._d.sr);
             document.body.append(this._d.r);
         }
-        setTrackingServices(services) {
+        _getServiceStateLabel(srv) {
+            if (!srv.consent.reviewed)
+                return 'Pending';
+            if (srv.consent.value)
+                return 'Allowed';
+            return 'Denied';
+        }
+        initSettingsService(services) {
             this._services = services;
             for (const service of services) {
-                createElmt('div', ['ot-settings__service']);
-                console.log(service);
+                const elSrv = createElmt('div', ['ot-settings__service', service.name]);
+                const elSrvHeader = createElmt('div', ['ot-settings__service-header']);
+                const elSrvName = createElmt('p', ['ot-settings__service-name']);
+                const elSrvType = createElmt('p', ['ot-settings__service-type']);
+                elSrvName.innerHTML = service.sw.name;
+                elSrvType.innerHTML = 'Tracking Measurement';
+                elSrvHeader.append(elSrvName);
+                elSrvHeader.append(elSrvType);
+                const elSrvContent = createElmt('div', ['ot-settings__service-content']);
+                const elSrvInfo = createElmt('div', ['ot-settings__service-info']);
+                const elSrvState = createElmt('div', ['ot-settings__service-state']);
+                elSrvState.innerHTML = this._getServiceStateLabel(service);
+                elSrvInfo.append(elSrvState);
+                const elSrvBtns = createElmt('div', ['ot-settings__service-btns']);
+                const btns = [
+                    {
+                        t: 'Deny',
+                        c: ['deny', 'ot-btn', 'ot-btn-sm', 'ot-error'],
+                        h: this._onDenyServicelClick.bind(this),
+                    },
+                    {
+                        t: 'Allow',
+                        c: ['allow', 'ot-btn', 'ot-btn-sm', 'ot-success'],
+                        h: this._onAllowServiceClick.bind(this),
+                    },
+                ];
+                for (const btn of btns) {
+                    const elServiceBtn = createElmt('button', btn.c);
+                    elServiceBtn.innerHTML = btn.t;
+                    elServiceBtn.addEventListener('click', (e) => btn.h(service.name, e));
+                    elSrvBtns.append(elServiceBtn);
+                }
+                elSrvContent.append(elSrvInfo);
+                elSrvContent.append(elSrvBtns);
+                elSrv.append(elSrvHeader);
+                elSrv.append(elSrvContent);
+                this._d.srvr.append(elSrv);
             }
         }
         setConsentReviewed(value) {
@@ -309,14 +364,20 @@
             this._trackingGuard = new TrackingGuard();
             this._uiManager = new UIManager();
             this._services = [];
-            for (const service of config.services) {
-                this._services.push({
-                    name: service.name,
-                    srv: this._trackingGuard.wrapService(service),
-                });
-            }
+            const serviceWrappers = [];
+            for (const service of config.services)
+                serviceWrappers.push(this._trackingGuard.wrapService(service));
             this._trackingGuard.save();
-            this._uiManager.setTrackingServices(this._services);
+            this._services = serviceWrappers.map((sw) => ({
+                name: sw.n,
+                consent: {
+                    value: this._trackingGuard.hasConsent(sw.n),
+                    reviewed: this._trackingGuard.isReviewed(sw.n),
+                },
+                sw,
+            }));
+            console.log(this._services);
+            this._uiManager.initSettingsService(this._services);
             this._uiManager.setConsentReviewed(this._trackingGuard.isReviewed());
             window.addEventListener('DOMContentLoaded', this._onReady.bind(this));
         }

@@ -9,18 +9,23 @@ export default class OwnTrack {
   _services: OTService[] = []
 
   constructor(config: Config) {
-    for (const service of config.services) {
-      this._services.push({
-        name: service.name,
-        srv: this._trackingGuard.wrapService(service),
-      })
-    }
+    const serviceWrappers: ServiceWrapper[] = []
+    for (const service of config.services)
+      serviceWrappers.push(this._trackingGuard.wrapService(service))
     this._trackingGuard.save()
-    this._uiManager.setTrackingServices(this._services)
+    this._services = serviceWrappers.map((sw) => ({
+      name: sw.n,
+      consent: {
+        value: this._trackingGuard.hasConsent(sw.n),
+        reviewed: this._trackingGuard.isReviewed(sw.n),
+      },
+      sw,
+    }))
+    console.log(this._services)
+    this._uiManager.initSettingsService(this._services)
     this._uiManager.setConsentReviewed(this._trackingGuard.isReviewed())
     window.addEventListener('DOMContentLoaded', this._onReady.bind(this))
   }
-
   _onReady() {
     this._uiManager.mount()
   }

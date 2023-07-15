@@ -26,7 +26,7 @@ export default class TrackingGuard {
     handlers,
   }: ConfigService): ServiceWrapper {
     // console.log(name, label, trackingScriptUrl, handlers)
-    const srv = new ServiceWrapper(name, onInit)
+    const srv = new ServiceWrapper(name, label, onInit)
     for (const [fnName, fn] of Object.entries(handlers))
       srv[fnName] = this._setFnGuard(fn)
     this._services.push(srv)
@@ -34,20 +34,29 @@ export default class TrackingGuard {
   }
 
   save(): void {
-    const consents = this._services.map((s: ServiceWrapper) => ({
-      srv: s.name,
-      v: this._consents.some((c) => c.srv === s.name)
-        ? this._consents.filter((c) => c.srv === s.name)[0].v
+    const consents = this._services.map((srv: ServiceWrapper) => ({
+      srv: srv.n,
+      v: this._consents.some((c) => c.srv === srv.n)
+        ? this._consents.filter((c) => c.srv === srv.n)[0].v
         : false,
-      r: this._consents.some((c) => c.srv === s.name)
-        ? this._consents.filter((c) => c.srv === s.name)[0].r
+      r: this._consents.some((c) => c.srv === srv.n)
+        ? this._consents.filter((c) => c.srv === srv.n)[0].r
         : false,
     }))
     this._consents = consents
     ls.setItem(LS_ITEM_NAME, consents)
   }
 
-  isReviewed(): boolean {
-    return this._consents.every((consent) => consent.r)
+  isReviewed(service: string = ''): boolean {
+    if (!service) return this._consents.every((consent) => consent.r)
+    return !!this._consents.filter(
+      (consent) => consent.srv === service && consent.r,
+    ).length
+  }
+  hasConsent(service: string = ''): boolean {
+    if (!service) return this._consents.every((consent) => consent.v)
+    return !!this._consents.filter(
+      (consent) => consent.srv === service && consent.v,
+    ).length
   }
 }

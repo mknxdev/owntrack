@@ -53,7 +53,7 @@ export default class UIManager {
     for (const btn of btns) {
       const elEntryBtn = document.createElement('button')
       btn.c.forEach((c) => elEntryBtn.classList.add(c))
-      elEntryBtn.innerText = btn.t
+      elEntryBtn.innerHTML = btn.t
       elEntryBtn.addEventListener('click', btn.h)
       elEntryBtns.append(elEntryBtn)
     }
@@ -78,7 +78,7 @@ export default class UIManager {
       if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
         content = this._d.sr.children.item(Number(i))
     const elHeadline = createElmt('h1')
-    elHeadline.innerText = 'Tracking Settings'
+    elHeadline.innerHTML = 'Tracking Settings'
     const elNotice = createElmt('p', ['ot-settings__notice'])
     elNotice.innerHTML =
       'Here you can manage tracking/analytics acceptance for each service.<br/> You can also accept or deny tracking for all services at once.'
@@ -99,9 +99,8 @@ export default class UIManager {
       'ot-settings__main-actions__btns',
     ])
     for (const btn of btns) {
-      const elEntryBtn = document.createElement('button')
-      btn.c.forEach((c) => elEntryBtn.classList.add(c))
-      elEntryBtn.innerText = btn.t
+      const elEntryBtn = createElmt('button', btn.c)
+      elEntryBtn.innerHTML = btn.t
       elEntryBtn.addEventListener('click', btn.h)
       elGActionsBtns.append(elEntryBtn)
     }
@@ -138,6 +137,12 @@ export default class UIManager {
   _onDenyAllClick(): void {
     console.log('denied')
   }
+  _onAllowServiceClick(service: string): void {
+    console.log('allowed', service)
+  }
+  _onDenyServicelClick(service: string): void {
+    console.log('denied', service)
+  }
 
   mount(): void {
     let settings: Element
@@ -148,11 +153,51 @@ export default class UIManager {
     this._d.r.append(this._d.sr)
     document.body.append(this._d.r)
   }
-  setTrackingServices(services: OTService[]): void {
+  _getServiceStateLabel(srv: OTService): string {
+    if (!srv.consent.reviewed) return 'Pending'
+    if (srv.consent.value) return 'Allowed'
+    return 'Denied'
+  }
+  initSettingsService(services: OTService[]): void {
     this._services = services
     for (const service of services) {
-      const elSrv = createElmt('div', ['ot-settings__service'])
-      console.log(service)
+      const elSrv = createElmt('div', ['ot-settings__service', service.name])
+      const elSrvHeader = createElmt('div', ['ot-settings__service-header'])
+      const elSrvName = createElmt('p', ['ot-settings__service-name'])
+      const elSrvType = createElmt('p', ['ot-settings__service-type'])
+      elSrvName.innerHTML = service.sw.name
+      elSrvType.innerHTML = 'Tracking Measurement'
+      elSrvHeader.append(elSrvName)
+      elSrvHeader.append(elSrvType)
+      const elSrvContent = createElmt('div', ['ot-settings__service-content'])
+      const elSrvInfo = createElmt('div', ['ot-settings__service-info'])
+      const elSrvState = createElmt('div', ['ot-settings__service-state'])
+      elSrvState.innerHTML = this._getServiceStateLabel(service)
+      elSrvInfo.append(elSrvState)
+      const elSrvBtns = createElmt('div', ['ot-settings__service-btns'])
+      const btns = [
+        {
+          t: 'Deny',
+          c: ['deny', 'ot-btn', 'ot-btn-sm', 'ot-error'],
+          h: this._onDenyServicelClick.bind(this),
+        },
+        {
+          t: 'Allow',
+          c: ['allow', 'ot-btn', 'ot-btn-sm', 'ot-success'],
+          h: this._onAllowServiceClick.bind(this),
+        },
+      ]
+      for (const btn of btns) {
+        const elServiceBtn = createElmt('button', btn.c)
+        elServiceBtn.innerHTML = btn.t
+        elServiceBtn.addEventListener('click', (e) => btn.h(service.name, e))
+        elSrvBtns.append(elServiceBtn)
+      }
+      elSrvContent.append(elSrvInfo)
+      elSrvContent.append(elSrvBtns)
+      elSrv.append(elSrvHeader)
+      elSrv.append(elSrvContent)
+      this._d.srvr.append(elSrv)
     }
   }
   setConsentReviewed(value: boolean): void {

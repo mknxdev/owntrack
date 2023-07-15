@@ -12,7 +12,11 @@ export type Config = {
 }
 export type OTService = {
   name: string
-  srv: ServiceWrapper
+  consent: {
+    value: boolean
+    reviewed: boolean
+  }
+  sw: ServiceWrapper
 }
 export type TrackingServiceConsent = {
   srv: string
