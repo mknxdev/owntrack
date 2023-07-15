@@ -1,11 +1,12 @@
 import { Config } from './types'
 import TrackingGuard from './TrackingGuard'
-import ServiceWrapper from './ServiceWrapper'
+import UIManager from './UIManager'
 
-type Services = Object
+type Services = object
 
 export default class OwnTrack {
   _trackingGuard: TrackingGuard = new TrackingGuard()
+  _uiManager: UIManager = new UIManager()
   _services: Services = {}
 
   constructor(config: Config) {
@@ -13,6 +14,8 @@ export default class OwnTrack {
       this._services[srv.name] = this._trackingGuard.wrapService(srv)
     }
     this._trackingGuard.save()
+    this._uiManager.setConsentReviewed(this._trackingGuard.isReviewed())
+    console.log(this._uiManager)
   }
 
   service(name: string) {

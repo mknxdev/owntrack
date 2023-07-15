@@ -43,6 +43,11 @@ export default class TrackingGuard {
         ? this._consents.filter((c) => c.srv === s.name)[0].r
         : false,
     }))
+    this._consents = consents
     ls.setItem(LS_ITEM_NAME, consents)
+  }
+
+  isReviewed(): boolean {
+    return this._consents.every((consent) => consent.r)
   }
 }

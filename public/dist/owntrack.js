@@ -10,24 +10,26 @@
             if (!config)
                 throw new Error('OwnTrack: A configuration object is required at first call.');
             // config.services
-            if (!config.services || !config.services.length)
-                throw new Error('OwnTrack: At least one service is required.');
+            if (!Array.isArray(config.services))
+                throw new Error(`OwnTrack: 'services' must be an array.`);
             // config.services.service
-            for (const srv of config.services) {
-                if (!srv.name)
-                    throw new Error(`OwnTrack: Service: 'name' is required.`);
-                if (srv.label && typeof srv.label !== 'string')
-                    throw new Error(`OwnTrack: Service: 'label' must be of type string.`);
-                if (!srv.trackingScriptUrl)
-                    throw new Error(`OwnTrack: Service: 'trackingScriptUrl' is required.`);
-                if (typeof srv.trackingScriptUrl !== 'string')
-                    throw new Error(`OwnTrack: Service: 'trackingScriptUrl' must be of type string.`);
-                if (!srv.onInit || typeof srv.onInit !== 'function')
-                    throw new Error(`OwnTrack: Service: 'onInit' callback is required.`);
-                if (!srv.handlers)
-                    throw new Error(`OwnTrack: Service: 'handlers' is required.`);
-                if (typeof srv.handlers !== 'object')
-                    throw new Error(`OwnTrack: Service: 'handlers' must be an object.`);
+            if (config.services) {
+                for (const srv of config.services) {
+                    if (!srv.name)
+                        throw new Error(`OwnTrack: Service: 'name' is required.`);
+                    if (srv.label && typeof srv.label !== 'string')
+                        throw new Error(`OwnTrack: Service: 'label' must be a string.`);
+                    if (!srv.trackingScriptUrl)
+                        throw new Error(`OwnTrack: Service: 'trackingScriptUrl' is required.`);
+                    if (typeof srv.trackingScriptUrl !== 'string')
+                        throw new Error(`OwnTrack: Service: 'trackingScriptUrl' must be a string.`);
+                    if (!srv.onInit || typeof srv.onInit !== 'function')
+                        throw new Error(`OwnTrack: Service: 'onInit' callback is required.`);
+                    if (!srv.handlers)
+                        throw new Error(`OwnTrack: Service: 'handlers' is required.`);
+                    if (typeof srv.handlers !== 'object')
+                        throw new Error(`OwnTrack: Service: 'handlers' must be an object.`);
+                }
             }
         }
         catch (err) {
@@ -108,18 +110,66 @@
                     ? this._consents.filter((c) => c.srv === s.name)[0].r
                     : false,
             }));
+            this._consents = consents;
             ls.setItem(LS_ITEM_NAME, consents);
+        }
+        isReviewed() {
+            return this._consents.every((consent) => consent.r);
+        }
+    }
+
+    class UIManager {
+        constructor() {
+            this._isConsentReviewed = false;
+            this._initRoot();
+            this._initEntry();
+            window.addEventListener('DOMContentLoaded', this._mount.bind(this));
+        }
+        _initRoot() {
+            this._elRoot = document.createElement('div');
+            this._elRoot.classList.add('ot-root');
+        }
+        _initEntry() {
+            const elBanner = document.createElement('div');
+            elBanner.classList.add('ot-banner');
+            const btns = [
+                { t: 'Allow', c: 'allow', h: this._onAllowAll },
+                { t: 'Deny', c: 'deny', h: this._onDenyAll },
+            ];
+            for (const btn of btns) {
+                const elBtn = document.createElement('button');
+                elBtn.classList.add(btn.c);
+                elBtn.innerText = btn.t;
+                elBtn.addEventListener('click', btn.h);
+                elBanner.append(elBtn);
+            }
+            this._elRoot.append(elBanner);
+        }
+        _onAllowAll() {
+            console.log('allowed');
+        }
+        _onDenyAll() {
+            console.log('denied');
+        }
+        _mount() {
+            document.body.append(this._elRoot);
+        }
+        setConsentReviewed(value) {
+            this._isConsentReviewed = value;
         }
     }
 
     class OwnTrack {
         constructor(config) {
             this._trackingGuard = new TrackingGuard();
+            this._uiManager = new UIManager();
             this._services = {};
             for (const srv of config.services) {
                 this._services[srv.name] = this._trackingGuard.wrapService(srv);
             }
             this._trackingGuard.save();
+            this._uiManager.setConsentReviewed(this._trackingGuard.isReviewed());
+            console.log(this._uiManager);
         }
         service(name) {
             console.log(this);

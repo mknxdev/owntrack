@@ -1,6 +1,7 @@
 import { Config } from './types'
 import { checkForValidInit } from './helpers/init'
 import OwnTrack from './OwnTrack'
+import './css/ot.css'
 
 declare global {
   interface Window {
