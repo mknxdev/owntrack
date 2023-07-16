@@ -89,4 +89,7 @@ export default class TrackingGuard {
       (consent) => consent.srv === service && consent.v,
     ).length
   }
+  hasGlobalConsent(value: boolean): boolean {
+    return this._consents.every((c) => c.v === value)
+  }
 }

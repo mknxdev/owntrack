@@ -121,36 +121,36 @@ export default class UIManager {
     this._d.srvr.classList.add('ot-settings__services')
   }
   _render(): void {
+    // entry + settings
+    const elBtnEntryDenyAll = findElementChildByAttr(
+      this._d.r,
+      'data-ot-entry-ua',
+      'deny',
+    )
+    const elBtnEntryAllowAll = findElementChildByAttr(
+      this._d.r,
+      'data-ot-entry-ua',
+      'allow',
+    )
+    const elBtnSettingsDenyAll = findElementChildByAttr(
+      this._d.sr,
+      'data-ot-settings-ua',
+      'deny',
+    )
+    const elBtnSettingsAllowAll = findElementChildByAttr(
+      this._d.sr,
+      'data-ot-settings-ua',
+      'allow',
+    )
+    elBtnEntryDenyAll.classList.remove('ot-active')
+    elBtnEntryAllowAll.classList.remove('ot-active')
+    elBtnSettingsDenyAll.classList.remove('ot-active')
+    elBtnSettingsAllowAll.classList.remove('ot-active')
     if (this._trackingGuard.isReviewed()) {
-      // entry + settings
-      const elBtnEntryDenyAll = findElementChildByAttr(
-        this._d.r,
-        'data-ot-entry-ua',
-        'deny',
-      )
-      const elBtnEntryAllowAll = findElementChildByAttr(
-        this._d.r,
-        'data-ot-entry-ua',
-        'allow',
-      )
-      const elBtnSettingsDenyAll = findElementChildByAttr(
-        this._d.sr,
-        'data-ot-settings-ua',
-        'deny',
-      )
-      const elBtnSettingsAllowAll = findElementChildByAttr(
-        this._d.sr,
-        'data-ot-settings-ua',
-        'allow',
-      )
-      elBtnEntryDenyAll.classList.remove('ot-active')
-      elBtnEntryAllowAll.classList.remove('ot-active')
-      elBtnSettingsDenyAll.classList.remove('ot-active')
-      elBtnSettingsAllowAll.classList.remove('ot-active')
-      if (!this._trackingGuard.hasConsent()) {
+      if (this._trackingGuard.hasGlobalConsent(false)) {
         elBtnEntryDenyAll.classList.add('ot-active')
         elBtnSettingsDenyAll.classList.add('ot-active')
-      } else {
+      } else if (this._trackingGuard.hasGlobalConsent(true)) {
         elBtnEntryAllowAll.classList.add('ot-active')
         elBtnSettingsAllowAll.classList.add('ot-active')
       }
@@ -165,19 +165,19 @@ export default class UIManager {
       if (elSrv) {
         const elState = findElementChildByAttr(elSrv, 'data-ot-srv-state')
         elState.innerHTML = this._getServiceStateLabel(srv)
+        const elBtnDeny = findElementChildByAttr(
+          elSrv,
+          'data-ot-settings-srv-ua',
+          'deny',
+        )
+        const elBtnAllow = findElementChildByAttr(
+          elSrv,
+          'data-ot-settings-srv-ua',
+          'allow',
+        )
+        elBtnDeny.classList.remove('ot-active')
+        elBtnAllow.classList.remove('ot-active')
         if (srv.consent.reviewed) {
-          const elBtnDeny = findElementChildByAttr(
-            elSrv,
-            'data-ot-settings-srv-ua',
-            'deny',
-          )
-          const elBtnAllow = findElementChildByAttr(
-            elSrv,
-            'data-ot-settings-srv-ua',
-            'allow',
-          )
-          elBtnDeny.classList.remove('ot-active')
-          elBtnAllow.classList.remove('ot-active')
           if (!srv.consent.value) elBtnDeny.classList.add('ot-active')
           else elBtnAllow.classList.add('ot-active')
         }
