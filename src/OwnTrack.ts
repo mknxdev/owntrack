@@ -1,4 +1,4 @@
-import { Config, TrackingService } from './types'
+import { Config, TrackingServiceLayer } from './types'
 import TrackingGuard from './TrackingGuard'
 import UIManager from './UIManager'
 import TrackingServiceWrapper from './TrackingServiceWrapper'
@@ -12,7 +12,7 @@ export default class OwnTrack {
     for (const service of config.services)
       serviceWrappers.push(this._trackingGuard.wrapService(service))
     this._trackingGuard.store()
-    const services: TrackingService[] = serviceWrappers.map((sw) => ({
+    const services: TrackingServiceLayer[] = serviceWrappers.map((sw) => ({
       name: sw.name,
       consent: {
         value: this._trackingGuard.hasConsent(sw.name),

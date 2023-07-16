@@ -1,4 +1,8 @@
-import { ConfigService, TrackingServiceConsent, TrackingService } from './types'
+import {
+  ConfigService,
+  TrackingServiceConsent,
+  TrackingServiceLayer,
+} from './types'
 import ls from './helpers/ls'
 import TrackingServiceWrapper from './TrackingServiceWrapper'
 
@@ -45,7 +49,7 @@ export default class TrackingGuard {
     this._consents = consents
     ls.setItem(LS_ITEM_NAME, consents)
   }
-  updateConsent(value: boolean, service = ''): void {
+  setConsent(value: boolean, service = ''): void {
     if (!service)
       for (const consent of this._consents) {
         consent.v = value
@@ -61,9 +65,17 @@ export default class TrackingGuard {
       })
     this.store()
   }
-  getTrackingServices(): TrackingService[] {
+  setUnreviewedConsents(value: boolean): void {
+    this._consents = this._consents.map((consent) => {
+      if (!consent.r) consent.v = value
+      consent.r = true
+      return consent
+    })
+    this.store()
+  }
+  getTrackingServices(): TrackingServiceLayer[] {
     return this._services.map(
-      (srv: TrackingServiceWrapper): TrackingService => ({
+      (srv: TrackingServiceWrapper): TrackingServiceLayer => ({
         name: srv.name,
         consent: {
           value: this._consents.some((c) => c.srv === srv.name)

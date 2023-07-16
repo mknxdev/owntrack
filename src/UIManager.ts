@@ -1,18 +1,23 @@
-import { TrackingService } from './types'
+import { TrackingServiceLayer } from './types'
 import { createElmt, generateIconElement } from './helpers/ui'
-import { findElementChildByAttr as findChildByAttr } from './helpers/dom'
+import {
+  findElementChildByAttr as findChildByAttr,
+  findElementChildByClass,
+} from './helpers/dom'
 import TrackingGuard from './TrackingGuard'
 
 export default class UIManager {
   _trackingGuard: TrackingGuard
-  _services: TrackingService[] = []
+  _services: TrackingServiceLayer[] = []
   _isConsentReviewed = false
   // _d: DOM
   // _d.r: root
+  // _d.r: entry root
   // _d.sr: settings root
   // _d.srvr: services root
-  _d: { r: Element; sr: Element; srvr: Element } = {
+  _d: { r: Element; er: Element; sr: Element; srvr: Element } = {
     r: createElmt('div'),
+    er: createElmt('div'),
     sr: createElmt('div'),
     srvr: createElmt('div'),
   }
@@ -30,7 +35,7 @@ export default class UIManager {
     this._d.r.classList.add('ot-root')
   }
   _initEntry(): void {
-    const elEntryWrapper = createElmt('div', ['ot-entry-wrapper'])
+    this._d.er = createElmt('div', ['ot-entry-wrapper'])
     const elEntry = createElmt('div', ['ot-entry'])
     const elEntryNotice = createElmt('div', ['ot-entry__notice'])
     elEntryNotice.innerHTML =
@@ -76,8 +81,8 @@ export default class UIManager {
       elEntryBtns.append(elEntryBtn)
     }
     elEntry.append(elEntryBtns)
-    elEntryWrapper.append(elEntry)
-    this._d.r.append(elEntryWrapper)
+    this._d.er.append(elEntry)
+    this._d.r.append(this._d.er)
   }
   _initSettings(): void {
     this._d.sr.classList.add('ot-settings-overlay')
@@ -201,42 +206,40 @@ export default class UIManager {
       }
     }
   }
-  _onMainCloseClick(): void {}
+  _onMainCloseClick(): void {
+    this._trackingGuard.setUnreviewedConsents(false)
+    this._services = this._trackingGuard.getTrackingServices()
+    this._render()
+    if (findElementChildByClass(this._d.r, 'ot-settings-overlay'))
+      this._d.sr.remove()
+    if (findElementChildByClass(this._d.r, 'ot-entry-wrapper'))
+      this._d.er.remove()
+  }
   _onSettingsOpenClick(): void {
-    for (let i = 0; i < this._d.r.children.length; i++)
-      if (
-        !this._d.r.children
-          .item(Number(i))
-          .classList.contains('ot-settings-overlay')
-      )
-        this._d.r.append(this._d.sr)
+    if (!findElementChildByClass(this._d.r, 'ot-settings-overlay'))
+      this._d.r.append(this._d.sr)
   }
   _onSettingsCloseClick(): void {
-    for (let i = 0; i < this._d.r.children.length; i++)
-      if (
-        this._d.r.children
-          .item(Number(i))
-          .classList.contains('ot-settings-overlay')
-      )
-        this._d.sr.remove()
+    if (findElementChildByClass(this._d.r, 'ot-settings-overlay'))
+      this._d.sr.remove()
   }
   _onAllowAllClick(): void {
-    this._trackingGuard.updateConsent(true)
+    this._trackingGuard.setConsent(true)
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
   _onDenyAllClick(): void {
-    this._trackingGuard.updateConsent(false)
+    this._trackingGuard.setConsent(false)
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
   _onAllowServiceClick(service: string): void {
-    this._trackingGuard.updateConsent(true, service)
+    this._trackingGuard.setConsent(true, service)
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
   _onDenyServicelClick(service: string): void {
-    this._trackingGuard.updateConsent(false, service)
+    this._trackingGuard.setConsent(false, service)
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
@@ -251,14 +254,12 @@ export default class UIManager {
     this._d.r.append(this._d.sr)
     document.body.append(this._d.r)
   }
-  _getServiceStateLabel(srv: TrackingService): string {
-    console.log(srv)
-
+  _getServiceStateLabel(srv: TrackingServiceLayer): string {
     if (!srv.consent.reviewed) return 'Pending'
     if (srv.consent.value) return 'Allowed'
     return 'Denied'
   }
-  initSettingsService(services: TrackingService[]): void {
+  initSettingsService(services: TrackingServiceLayer[]): void {
     this._services = services
     for (const service of services) {
       const elSrv = createElmt('div', ['ot-settings__service'], {

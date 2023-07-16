@@ -114,7 +114,7 @@
             this._consents = consents;
             ls.setItem(LS_ITEM_NAME, consents);
         }
-        updateConsent(value, service = '') {
+        setConsent(value, service = '') {
             if (!service)
                 for (const consent of this._consents) {
                     consent.v = value;
@@ -128,6 +128,15 @@
                     }
                     return consent;
                 });
+            this.store();
+        }
+        setUnreviewedConsents(value) {
+            this._consents = this._consents.map((consent) => {
+                if (!consent.r)
+                    consent.v = value;
+                consent.r = true;
+                return consent;
+            });
             this.store();
         }
         getTrackingServices() {
@@ -210,6 +219,17 @@
         }
         return found;
     };
+    const findElementChildByClass = (el, _class) => {
+        let found = null;
+        for (let i = 0; i < el.children.length; i++) {
+            const child = el.children[i];
+            if (child.classList.contains(_class))
+                found = child;
+            else if (!found)
+                found = findElementChildByClass(child, _class);
+        }
+        return found;
+    };
 
     class UIManager {
         constructor(trackingGuard) {
@@ -217,10 +237,12 @@
             this._isConsentReviewed = false;
             // _d: DOM
             // _d.r: root
+            // _d.r: entry root
             // _d.sr: settings root
             // _d.srvr: services root
             this._d = {
                 r: createElmt('div'),
+                er: createElmt('div'),
                 sr: createElmt('div'),
                 srvr: createElmt('div'),
             };
@@ -235,7 +257,7 @@
             this._d.r.classList.add('ot-root');
         }
         _initEntry() {
-            const elEntryWrapper = createElmt('div', ['ot-entry-wrapper']);
+            this._d.er = createElmt('div', ['ot-entry-wrapper']);
             const elEntry = createElmt('div', ['ot-entry']);
             const elEntryNotice = createElmt('div', ['ot-entry__notice']);
             elEntryNotice.innerHTML =
@@ -282,8 +304,8 @@
                 elEntryBtns.append(elEntryBtn);
             }
             elEntry.append(elEntryBtns);
-            elEntryWrapper.append(elEntry);
-            this._d.r.append(elEntryWrapper);
+            this._d.er.append(elEntry);
+            this._d.r.append(this._d.er);
         }
         _initSettings() {
             this._d.sr.classList.add('ot-settings-overlay');
@@ -382,38 +404,40 @@
                 }
             }
         }
-        _onMainCloseClick() { }
+        _onMainCloseClick() {
+            this._trackingGuard.setUnreviewedConsents(false);
+            this._services = this._trackingGuard.getTrackingServices();
+            this._render();
+            if (findElementChildByClass(this._d.r, 'ot-settings-overlay'))
+                this._d.sr.remove();
+            if (findElementChildByClass(this._d.r, 'ot-entry-wrapper'))
+                this._d.er.remove();
+        }
         _onSettingsOpenClick() {
-            for (let i = 0; i < this._d.r.children.length; i++)
-                if (!this._d.r.children
-                    .item(Number(i))
-                    .classList.contains('ot-settings-overlay'))
-                    this._d.r.append(this._d.sr);
+            if (!findElementChildByClass(this._d.r, 'ot-settings-overlay'))
+                this._d.r.append(this._d.sr);
         }
         _onSettingsCloseClick() {
-            for (let i = 0; i < this._d.r.children.length; i++)
-                if (this._d.r.children
-                    .item(Number(i))
-                    .classList.contains('ot-settings-overlay'))
-                    this._d.sr.remove();
+            if (findElementChildByClass(this._d.r, 'ot-settings-overlay'))
+                this._d.sr.remove();
         }
         _onAllowAllClick() {
-            this._trackingGuard.updateConsent(true);
+            this._trackingGuard.setConsent(true);
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
         }
         _onDenyAllClick() {
-            this._trackingGuard.updateConsent(false);
+            this._trackingGuard.setConsent(false);
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
         }
         _onAllowServiceClick(service) {
-            this._trackingGuard.updateConsent(true, service);
+            this._trackingGuard.setConsent(true, service);
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
         }
         _onDenyServicelClick(service) {
-            this._trackingGuard.updateConsent(false, service);
+            this._trackingGuard.setConsent(false, service);
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
         }
@@ -428,7 +452,6 @@
             document.body.append(this._d.r);
         }
         _getServiceStateLabel(srv) {
-            console.log(srv);
             if (!srv.consent.reviewed)
                 return 'Pending';
             if (srv.consent.value)

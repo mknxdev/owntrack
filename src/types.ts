@@ -14,7 +14,7 @@ export type Consent = {
   value: boolean
   reviewed: boolean
 }
-export type TrackingService = {
+export type TrackingServiceLayer = {
   name: string
   consent: Consent
   sw: ServiceWrapper
