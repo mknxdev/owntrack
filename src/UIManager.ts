@@ -1,6 +1,6 @@
 import { TrackingService } from './types'
 import { createElmt, generateIconElement } from './helpers/ui'
-import { findElementChildByAttr } from './helpers/dom'
+import { findElementChildByAttr as findChildByAttr } from './helpers/dom'
 import TrackingGuard from './TrackingGuard'
 
 export default class UIManager {
@@ -41,7 +41,7 @@ export default class UIManager {
         t: 'Settings',
         c: ['otua-settings', 'ot-btn', 'ot-ghost'],
         a: { 'data-ot-entry-ua': 'settings' },
-        h: this._onOpenSettingsClick.bind(this),
+        h: this._onSettingsOpenClick.bind(this),
       },
       {
         t: 'Deny',
@@ -55,11 +55,23 @@ export default class UIManager {
         a: { 'data-ot-entry-ua': 'allow' },
         h: this._onAllowAllClick.bind(this),
       },
+      {
+        i: 'close',
+        c: ['otua-close', 'ot-btn', 'ot-btn-icn', 'ot-ghost', 'ot-rounded'],
+        a: { 'data-ot-entry-ua': 'close' },
+        h: this._onMainCloseClick.bind(this),
+      },
     ]
     const elEntryBtns = createElmt('div', ['ot-entry__btns'])
     for (const btn of btns) {
-      const elEntryBtn = createElmt('button', btn.c, btn.a)
-      elEntryBtn.innerHTML = btn.t
+      let elEntryBtn: Element
+      if (btn.t) {
+        elEntryBtn = createElmt('button', btn.c, btn.a)
+        elEntryBtn.innerHTML = btn.t
+      } else if (btn.i) {
+        elEntryBtn = createElmt('div', btn.c, btn.a)
+        elEntryBtn.append(generateIconElement('close'))
+      }
       elEntryBtn.addEventListener('click', btn.h)
       elEntryBtns.append(elEntryBtn)
     }
@@ -71,10 +83,15 @@ export default class UIManager {
     this._d.sr.classList.add('ot-settings-overlay')
     const elSettings = createElmt('div', ['ot-settings'])
     // "close" btn
-    const elCloseBtn = createElmt('div', ['ot-settings__close'])
-    elCloseBtn.addEventListener('click', this._onCloseSettingsClick.bind(this))
+    const elCloseBtn = createElmt('div', [
+      'ot-settings__close',
+      'ot-btn',
+      'ot-btn-icn',
+      'ot-ghost',
+      'ot-rounded',
+    ])
+    elCloseBtn.addEventListener('click', this._onSettingsCloseClick.bind(this))
     const elClose = generateIconElement('close')
-    elClose.classList.add('ot-icn')
     elCloseBtn.append(elClose)
     elSettings.append(elCloseBtn)
     this._d.sr.append(elSettings)
@@ -122,22 +139,22 @@ export default class UIManager {
   }
   _render(): void {
     // entry + settings
-    const elBtnEntryDenyAll = findElementChildByAttr(
+    const elBtnEntryDenyAll = findChildByAttr(
       this._d.r,
       'data-ot-entry-ua',
       'deny',
     )
-    const elBtnEntryAllowAll = findElementChildByAttr(
+    const elBtnEntryAllowAll = findChildByAttr(
       this._d.r,
       'data-ot-entry-ua',
       'allow',
     )
-    const elBtnSettingsDenyAll = findElementChildByAttr(
+    const elBtnSettingsDenyAll = findChildByAttr(
       this._d.sr,
       'data-ot-settings-ua',
       'deny',
     )
-    const elBtnSettingsAllowAll = findElementChildByAttr(
+    const elBtnSettingsAllowAll = findChildByAttr(
       this._d.sr,
       'data-ot-settings-ua',
       'allow',
@@ -157,20 +174,20 @@ export default class UIManager {
     }
     // settings:services
     for (const srv of this._services) {
-      const elSrv: Element = findElementChildByAttr(
+      const elSrv: Element = findChildByAttr(
         this._d.srvr,
         'data-ot-srv',
         srv.name,
       )
       if (elSrv) {
-        const elState = findElementChildByAttr(elSrv, 'data-ot-srv-state')
+        const elState = findChildByAttr(elSrv, 'data-ot-srv-state')
         elState.innerHTML = this._getServiceStateLabel(srv)
-        const elBtnDeny = findElementChildByAttr(
+        const elBtnDeny = findChildByAttr(
           elSrv,
           'data-ot-settings-srv-ua',
           'deny',
         )
-        const elBtnAllow = findElementChildByAttr(
+        const elBtnAllow = findChildByAttr(
           elSrv,
           'data-ot-settings-srv-ua',
           'allow',
@@ -184,7 +201,8 @@ export default class UIManager {
       }
     }
   }
-  _onOpenSettingsClick(): void {
+  _onMainCloseClick(): void {}
+  _onSettingsOpenClick(): void {
     for (let i = 0; i < this._d.r.children.length; i++)
       if (
         !this._d.r.children
@@ -193,7 +211,7 @@ export default class UIManager {
       )
         this._d.r.append(this._d.sr)
   }
-  _onCloseSettingsClick(): void {
+  _onSettingsCloseClick(): void {
     for (let i = 0; i < this._d.r.children.length; i++)
       if (
         this._d.r.children

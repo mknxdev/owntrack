@@ -180,6 +180,7 @@
         l2.setAttribute('stroke', '#000000');
         svg.append(l1);
         svg.append(l2);
+        svg.classList.add('ot-icn');
         return svg;
     };
     const createElmt = (tag, classes = [], attrs = {}) => {
@@ -245,7 +246,7 @@
                     t: 'Settings',
                     c: ['otua-settings', 'ot-btn', 'ot-ghost'],
                     a: { 'data-ot-entry-ua': 'settings' },
-                    h: this._onOpenSettingsClick.bind(this),
+                    h: this._onSettingsOpenClick.bind(this),
                 },
                 {
                     t: 'Deny',
@@ -259,11 +260,24 @@
                     a: { 'data-ot-entry-ua': 'allow' },
                     h: this._onAllowAllClick.bind(this),
                 },
+                {
+                    i: 'close',
+                    c: ['otua-close', 'ot-btn', 'ot-btn-icn', 'ot-ghost', 'ot-rounded'],
+                    a: { 'data-ot-entry-ua': 'close' },
+                    h: this._onMainCloseClick.bind(this),
+                },
             ];
             const elEntryBtns = createElmt('div', ['ot-entry__btns']);
             for (const btn of btns) {
-                const elEntryBtn = createElmt('button', btn.c, btn.a);
-                elEntryBtn.innerHTML = btn.t;
+                let elEntryBtn;
+                if (btn.t) {
+                    elEntryBtn = createElmt('button', btn.c, btn.a);
+                    elEntryBtn.innerHTML = btn.t;
+                }
+                else if (btn.i) {
+                    elEntryBtn = createElmt('div', btn.c, btn.a);
+                    elEntryBtn.append(generateIconElement('close'));
+                }
                 elEntryBtn.addEventListener('click', btn.h);
                 elEntryBtns.append(elEntryBtn);
             }
@@ -275,10 +289,15 @@
             this._d.sr.classList.add('ot-settings-overlay');
             const elSettings = createElmt('div', ['ot-settings']);
             // "close" btn
-            const elCloseBtn = createElmt('div', ['ot-settings__close']);
-            elCloseBtn.addEventListener('click', this._onCloseSettingsClick.bind(this));
+            const elCloseBtn = createElmt('div', [
+                'ot-settings__close',
+                'ot-btn',
+                'ot-btn-icn',
+                'ot-ghost',
+                'ot-rounded',
+            ]);
+            elCloseBtn.addEventListener('click', this._onSettingsCloseClick.bind(this));
             const elClose = generateIconElement('close');
-            elClose.classList.add('ot-icn');
             elCloseBtn.append(elClose);
             elSettings.append(elCloseBtn);
             this._d.sr.append(elSettings);
@@ -363,14 +382,15 @@
                 }
             }
         }
-        _onOpenSettingsClick() {
+        _onMainCloseClick() { }
+        _onSettingsOpenClick() {
             for (let i = 0; i < this._d.r.children.length; i++)
                 if (!this._d.r.children
                     .item(Number(i))
                     .classList.contains('ot-settings-overlay'))
                     this._d.r.append(this._d.sr);
         }
-        _onCloseSettingsClick() {
+        _onSettingsCloseClick() {
             for (let i = 0; i < this._d.r.children.length; i++)
                 if (this._d.r.children
                     .item(Number(i))

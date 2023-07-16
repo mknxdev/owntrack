@@ -1,5 +1,5 @@
 .ot-root,
-.ot-root button.ot-btn {
+.ot-root .ot-btn {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 15px;
   line-height: 1.2;
@@ -15,8 +15,8 @@
 
 /* OT: Buttons */
 
-.ot-root button.ot-btn {
-  padding: 10px 14px;
+.ot-root .ot-btn {
+  padding: 9px 14px;
   border: 0;
   border-radius: 5px;
   cursor: pointer;
@@ -24,42 +24,52 @@
   font-size: 15px;
   font-weight: 700;
 }
-.ot-root button.ot-btn.ot-btn-sm {
+.ot-root .ot-btn.ot-btn-icn {
+  padding: 10px 10px;
+  font-size: 0;
+}
+.ot-root .ot-btn.ot-btn-icn svg {
+  font-size: 0;
+}
+.ot-root .ot-btn.ot-btn-sm {
   padding: 10px 14px;
   font-size: 12px;
 }
-.ot-root button.ot-btn.ot-ghost {
+.ot-root .ot-btn.ot-ghost {
   background-color: transparent;
 }
-.ot-root button.ot-btn.ot-ghost:hover {
+.ot-root .ot-btn.ot-ghost:hover {
   background-color: #f7f7f7;
 }
-.ot-root button.ot-btn.otua-allow,
-.ot-root button.ot-btn.otua-deny {
+.ot-root .ot-btn.otua-allow,
+.ot-root .ot-btn.otua-deny {
   color: #ffffff;
 }
-.ot-root button.ot-btn:not(.ot-active).otua-allow {
+.ot-root .ot-btn.ot-rounded {
+  border-radius: 30px;
+}
+.ot-root .ot-btn:not(.ot-active).otua-allow {
   background-color: #9feca8;
 }
-.ot-root button.ot-btn:not(.ot-active).otua-allow:hover {
+.ot-root .ot-btn:not(.ot-active).otua-allow:hover {
   background-color: #259031;
 }
-.ot-root button.ot-btn:not(.ot-active).otua-deny {
+.ot-root .ot-btn:not(.ot-active).otua-deny {
   background-color: #ebabab;
 }
-.ot-root button.ot-btn:not(.ot-active).otua-deny:hover {
+.ot-root .ot-btn:not(.ot-active).otua-deny:hover {
   background-color: #b61a1a;
 }
-.ot-root button.ot-btn.ot-active.otua-allow {
+.ot-root .ot-btn.ot-active.otua-allow {
   background-color: #45b051;
 }
-.ot-root button.ot-btn.ot-active.otua-allow:hover {
+.ot-root .ot-btn.ot-active.otua-allow:hover {
   background-color: #259031;
 }
-.ot-root button.ot-btn.ot-active.otua-deny {
+.ot-root .ot-btn.ot-active.otua-deny {
   background-color: #d63a3a;
 }
-.ot-root button.ot-btn.ot-active.otua-deny:hover {
+.ot-root .ot-btn.ot-active.otua-deny:hover {
   background-color: #b61a1a;
 }
 
@@ -118,15 +128,9 @@
   box-shadow: 0 1px 5px #d1d1d1;
 }
 .ot-root .ot-settings .ot-settings__close {
-  padding: 8px;
   position: absolute;
   top: 15px;
   right: 15px;
-  border-radius: 50%;
-  cursor: pointer;
-}
-.ot-root .ot-settings .ot-settings__close:hover {
-  background-color: #eeeeee;
 }
 .ot-root .ot-settings h1 {
   margin: 0 0 30px;
@@ -147,6 +151,7 @@
 }
 .ot-root .ot-settings .ot-settings__main-actions__btns {
   display: flex;
+  align-items: center;
   gap: 15px;
 }
 .ot-root .ot-settings .ot-settings__services {
@@ -156,6 +161,10 @@
   display: flex;
   justify-content: space-between;
   align-items: stretch;
+  border-bottom: 1px solid #dddddd;
+}
+.ot-root .ot-settings .ot-settings__service:last-of-type {
+  border: 0;
 }
 .ot-root .ot-settings .ot-settings__service-header {
   flex: 0 0 20%;

@@ -20,6 +20,7 @@ const getIconCloseElement = (): Element => {
   l2.setAttribute('stroke', '#000000')
   svg.append(l1)
   svg.append(l2)
+  svg.classList.add('ot-icn')
   return svg
 }
 
