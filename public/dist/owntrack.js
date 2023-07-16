@@ -231,7 +231,7 @@
         return found;
     };
 
-    class UIManager {
+    class UIProxy {
         constructor(trackingGuard) {
             this._services = [];
             // _d: DOM
@@ -529,7 +529,7 @@
     class OwnTrack {
         constructor(config) {
             this._trackingGuard = new TrackingGuard();
-            this._uiManager = new UIManager(this._trackingGuard);
+            this._ui = new UIProxy(this._trackingGuard);
             const serviceWrappers = [];
             for (const service of config.services)
                 serviceWrappers.push(this._trackingGuard.wrapService(service));
@@ -542,11 +542,11 @@
                 },
                 sw,
             }));
-            this._uiManager.initSettingsService(services);
+            this._ui.initSettingsService(services);
             window.addEventListener('DOMContentLoaded', this._onReady.bind(this));
         }
         _onReady() {
-            this._uiManager.mount();
+            this._ui.mount();
             console.log(this);
         }
         service(name) {

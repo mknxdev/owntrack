@@ -6,7 +6,7 @@ import {
 } from './helpers/dom'
 import TrackingGuard from './TrackingGuard'
 
-export default class UIManager {
+export default class UIProxy {
   _trackingGuard: TrackingGuard
   _services: TrackingServiceLayer[] = []
   // _d: DOM

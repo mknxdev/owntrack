@@ -1,11 +1,11 @@
 import { Config, TrackingServiceLayer } from './types'
 import TrackingGuard from './TrackingGuard'
-import UIManager from './UIManager'
+import UIProxy from './UIProxy'
 import TrackingServiceWrapper from './TrackingServiceWrapper'
 
 export default class OwnTrack {
   _trackingGuard: TrackingGuard = new TrackingGuard()
-  _uiManager: UIManager = new UIManager(this._trackingGuard)
+  _ui: UIProxy = new UIProxy(this._trackingGuard)
 
   constructor(config: Config) {
     const serviceWrappers: TrackingServiceWrapper[] = []
@@ -20,11 +20,11 @@ export default class OwnTrack {
       },
       sw,
     }))
-    this._uiManager.initSettingsService(services)
+    this._ui.initSettingsService(services)
     window.addEventListener('DOMContentLoaded', this._onReady.bind(this))
   }
   _onReady() {
-    this._uiManager.mount()
+    this._ui.mount()
     console.log(this)
   }
 
