@@ -41,6 +41,9 @@
 .ot-root .ot-btn.ot-ghost:hover {
   background-color: #f7f7f7;
 }
+.ot-root .ot-btn.ot-ghost.ot-active {
+  background-color: #f0f0f0;
+}
 .ot-root .ot-btn.otua-allow,
 .ot-root .ot-btn.otua-deny {
   color: #ffffff;
@@ -48,16 +51,16 @@
 .ot-root .ot-btn.ot-rounded {
   border-radius: 30px;
 }
-.ot-root .ot-btn:not(.ot-active).otua-allow {
+.ot-root .ot-btn.otua-allow {
   background-color: #9feca8;
 }
-.ot-root .ot-btn:not(.ot-active).otua-allow:hover {
+.ot-root .ot-btn.otua-allow:hover {
   background-color: #259031;
 }
-.ot-root .ot-btn:not(.ot-active).otua-deny {
+.ot-root .ot-btn.otua-deny {
   background-color: #ebabab;
 }
-.ot-root .ot-btn:not(.ot-active).otua-deny:hover {
+.ot-root .ot-btn.otua-deny:hover {
   background-color: #b61a1a;
 }
 .ot-root .ot-btn.ot-active.otua-allow {

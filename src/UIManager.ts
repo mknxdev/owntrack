@@ -9,7 +9,6 @@ import TrackingGuard from './TrackingGuard'
 export default class UIManager {
   _trackingGuard: TrackingGuard
   _services: TrackingServiceLayer[] = []
-  _isConsentReviewed = false
   // _d: DOM
   // _d.r: root
   // _d.r: entry root
@@ -21,6 +20,7 @@ export default class UIManager {
     sr: createElmt('div'),
     srvr: createElmt('div'),
   }
+  _settingsDisplayed = true
 
   constructor(trackingGuard: TrackingGuard) {
     this._trackingGuard = trackingGuard
@@ -144,37 +144,42 @@ export default class UIManager {
   }
   _render(): void {
     // entry + settings
-    const elBtnEntryDenyAll = findChildByAttr(
+    const elBtnESettings = findChildByAttr(
       this._d.r,
       'data-ot-entry-ua',
-      'deny',
+      'settings',
     )
-    const elBtnEntryAllowAll = findChildByAttr(
+    if (elBtnESettings) {
+      if (this._settingsDisplayed) elBtnESettings.classList.add('ot-active')
+      else elBtnESettings.classList.remove('ot-active')
+    }
+    const elBtnEDenyAll = findChildByAttr(this._d.r, 'data-ot-entry-ua', 'deny')
+    const elBtnEAllowAll = findChildByAttr(
       this._d.r,
       'data-ot-entry-ua',
       'allow',
     )
-    const elBtnSettingsDenyAll = findChildByAttr(
+    const elBtnSDenyAll = findChildByAttr(
       this._d.sr,
       'data-ot-settings-ua',
       'deny',
     )
-    const elBtnSettingsAllowAll = findChildByAttr(
+    const elBtnSAllowAll = findChildByAttr(
       this._d.sr,
       'data-ot-settings-ua',
       'allow',
     )
-    elBtnEntryDenyAll.classList.remove('ot-active')
-    elBtnEntryAllowAll.classList.remove('ot-active')
-    elBtnSettingsDenyAll.classList.remove('ot-active')
-    elBtnSettingsAllowAll.classList.remove('ot-active')
+    if (elBtnEDenyAll) elBtnEDenyAll.classList.remove('ot-active')
+    if (elBtnEAllowAll) elBtnEAllowAll.classList.remove('ot-active')
+    if (elBtnSDenyAll) elBtnSDenyAll.classList.remove('ot-active')
+    if (elBtnSAllowAll) elBtnSAllowAll.classList.remove('ot-active')
     if (this._trackingGuard.isReviewed()) {
       if (this._trackingGuard.hasGlobalConsent(false)) {
-        elBtnEntryDenyAll.classList.add('ot-active')
-        elBtnSettingsDenyAll.classList.add('ot-active')
+        elBtnEDenyAll.classList.add('ot-active')
+        elBtnSDenyAll.classList.add('ot-active')
       } else if (this._trackingGuard.hasGlobalConsent(true)) {
-        elBtnEntryAllowAll.classList.add('ot-active')
-        elBtnSettingsAllowAll.classList.add('ot-active')
+        elBtnEAllowAll.classList.add('ot-active')
+        elBtnSAllowAll.classList.add('ot-active')
       }
     }
     // settings:services
@@ -216,12 +221,21 @@ export default class UIManager {
       this._d.er.remove()
   }
   _onSettingsOpenClick(): void {
+    this._settingsDisplayed = true
     if (!findElementChildByClass(this._d.r, 'ot-settings-overlay'))
       this._d.r.append(this._d.sr)
+    this._render()
   }
   _onSettingsCloseClick(): void {
+    this._settingsDisplayed = false
     if (findElementChildByClass(this._d.r, 'ot-settings-overlay'))
       this._d.sr.remove()
+    if (
+      this._trackingGuard.isReviewed() &&
+      findElementChildByClass(this._d.r, 'ot-entry-wrapper')
+    )
+      this._d.er.remove()
+    this._render()
   }
   _onAllowAllClick(): void {
     this._trackingGuard.setConsent(true)
@@ -251,7 +265,7 @@ export default class UIManager {
       if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
         settings = this._d.sr.children.item(Number(i))
     settings.append(this._d.srvr)
-    this._d.r.append(this._d.sr)
+    if (this._settingsDisplayed) this._d.r.append(this._d.sr)
     document.body.append(this._d.r)
   }
   _getServiceStateLabel(srv: TrackingServiceLayer): string {
@@ -305,8 +319,5 @@ export default class UIManager {
       elSrv.append(elSrvContent)
       this._d.srvr.append(elSrv)
     }
-  }
-  setConsentReviewed(value: boolean): void {
-    this._isConsentReviewed = value
   }
 }

@@ -21,7 +21,6 @@ export default class OwnTrack {
       sw,
     }))
     this._uiManager.initSettingsService(services)
-    this._uiManager.setConsentReviewed(this._trackingGuard.isReviewed())
     window.addEventListener('DOMContentLoaded', this._onReady.bind(this))
   }
   _onReady() {

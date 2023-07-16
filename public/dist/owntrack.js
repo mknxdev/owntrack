@@ -234,7 +234,6 @@
     class UIManager {
         constructor(trackingGuard) {
             this._services = [];
-            this._isConsentReviewed = false;
             // _d: DOM
             // _d.r: root
             // _d.r: entry root
@@ -246,6 +245,7 @@
                 sr: createElmt('div'),
                 srvr: createElmt('div'),
             };
+            this._settingsDisplayed = true;
             this._trackingGuard = trackingGuard;
             this._initBase();
             this._initEntry();
@@ -367,22 +367,33 @@
         }
         _render() {
             // entry + settings
-            const elBtnEntryDenyAll = findElementChildByAttr(this._d.r, 'data-ot-entry-ua', 'deny');
-            const elBtnEntryAllowAll = findElementChildByAttr(this._d.r, 'data-ot-entry-ua', 'allow');
-            const elBtnSettingsDenyAll = findElementChildByAttr(this._d.sr, 'data-ot-settings-ua', 'deny');
-            const elBtnSettingsAllowAll = findElementChildByAttr(this._d.sr, 'data-ot-settings-ua', 'allow');
-            elBtnEntryDenyAll.classList.remove('ot-active');
-            elBtnEntryAllowAll.classList.remove('ot-active');
-            elBtnSettingsDenyAll.classList.remove('ot-active');
-            elBtnSettingsAllowAll.classList.remove('ot-active');
+            const elBtnESettings = findElementChildByAttr(this._d.r, 'data-ot-entry-ua', 'settings');
+            if (elBtnESettings) {
+                if (this._settingsDisplayed)
+                    elBtnESettings.classList.add('ot-active');
+                else
+                    elBtnESettings.classList.remove('ot-active');
+            }
+            const elBtnEDenyAll = findElementChildByAttr(this._d.r, 'data-ot-entry-ua', 'deny');
+            const elBtnEAllowAll = findElementChildByAttr(this._d.r, 'data-ot-entry-ua', 'allow');
+            const elBtnSDenyAll = findElementChildByAttr(this._d.sr, 'data-ot-settings-ua', 'deny');
+            const elBtnSAllowAll = findElementChildByAttr(this._d.sr, 'data-ot-settings-ua', 'allow');
+            if (elBtnEDenyAll)
+                elBtnEDenyAll.classList.remove('ot-active');
+            if (elBtnEAllowAll)
+                elBtnEAllowAll.classList.remove('ot-active');
+            if (elBtnSDenyAll)
+                elBtnSDenyAll.classList.remove('ot-active');
+            if (elBtnSAllowAll)
+                elBtnSAllowAll.classList.remove('ot-active');
             if (this._trackingGuard.isReviewed()) {
                 if (this._trackingGuard.hasGlobalConsent(false)) {
-                    elBtnEntryDenyAll.classList.add('ot-active');
-                    elBtnSettingsDenyAll.classList.add('ot-active');
+                    elBtnEDenyAll.classList.add('ot-active');
+                    elBtnSDenyAll.classList.add('ot-active');
                 }
                 else if (this._trackingGuard.hasGlobalConsent(true)) {
-                    elBtnEntryAllowAll.classList.add('ot-active');
-                    elBtnSettingsAllowAll.classList.add('ot-active');
+                    elBtnEAllowAll.classList.add('ot-active');
+                    elBtnSAllowAll.classList.add('ot-active');
                 }
             }
             // settings:services
@@ -414,12 +425,19 @@
                 this._d.er.remove();
         }
         _onSettingsOpenClick() {
+            this._settingsDisplayed = true;
             if (!findElementChildByClass(this._d.r, 'ot-settings-overlay'))
                 this._d.r.append(this._d.sr);
+            this._render();
         }
         _onSettingsCloseClick() {
+            this._settingsDisplayed = false;
             if (findElementChildByClass(this._d.r, 'ot-settings-overlay'))
                 this._d.sr.remove();
+            if (this._trackingGuard.isReviewed() &&
+                findElementChildByClass(this._d.r, 'ot-entry-wrapper'))
+                this._d.er.remove();
+            this._render();
         }
         _onAllowAllClick() {
             this._trackingGuard.setConsent(true);
@@ -448,7 +466,8 @@
                 if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
                     settings = this._d.sr.children.item(Number(i));
             settings.append(this._d.srvr);
-            this._d.r.append(this._d.sr);
+            if (this._settingsDisplayed)
+                this._d.r.append(this._d.sr);
             document.body.append(this._d.r);
         }
         _getServiceStateLabel(srv) {
@@ -505,9 +524,6 @@
                 this._d.srvr.append(elSrv);
             }
         }
-        setConsentReviewed(value) {
-            this._isConsentReviewed = value;
-        }
     }
 
     class OwnTrack {
@@ -527,7 +543,6 @@
                 sw,
             }));
             this._uiManager.initSettingsService(services);
-            this._uiManager.setConsentReviewed(this._trackingGuard.isReviewed());
             window.addEventListener('DOMContentLoaded', this._onReady.bind(this));
         }
         _onReady() {
