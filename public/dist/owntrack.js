@@ -241,19 +241,19 @@
                 {
                     t: 'Settings',
                     c: ['otua-settings', 'ot-btn', 'ot-ghost'],
-                    a: { 'data-ot-global-ua': 'settings' },
+                    a: { 'data-ot-entry-ua': 'settings' },
                     h: this._onOpenSettingsClick.bind(this),
                 },
                 {
                     t: 'Deny',
                     c: ['otua-deny', 'ot-btn'],
-                    a: { 'data-ot-global-ua': 'deny' },
+                    a: { 'data-ot-entry-ua': 'deny' },
                     h: this._onDenyAllClick.bind(this),
                 },
                 {
                     t: 'Allow',
                     c: ['otua-allow', 'ot-btn'],
-                    a: { 'data-ot-global-ua': 'allow' },
+                    a: { 'data-ot-entry-ua': 'allow' },
                     h: this._onAllowAllClick.bind(this),
                 },
             ];
@@ -294,13 +294,13 @@
                 {
                     t: 'Deny all',
                     c: ['otua-deny', 'ot-btn', 'otua-deny'],
-                    a: { 'data-ot-global-ua': 'deny' },
+                    a: { 'data-ot-settings-ua': 'deny' },
                     h: this._onDenyAllClick.bind(this),
                 },
                 {
                     t: 'Allow all',
                     c: ['otua-allow', 'ot-btn', 'otua-allow'],
-                    a: { 'data-ot-global-ua': 'allow' },
+                    a: { 'data-ot-settings-ua': 'allow' },
                     h: this._onAllowAllClick.bind(this),
                 },
             ];
@@ -322,17 +322,34 @@
             this._d.srvr.classList.add('ot-settings__services');
         }
         _render() {
-            // global DOM
-            // const elBtnDenyAll = findElementChildByAttr()
-            // services DOM
+            if (this._trackingGuard.isReviewed()) {
+                // entry + settings
+                const elBtnEntryDenyAll = findElementChildByAttr(this._d.r, 'data-ot-entry-ua', 'deny');
+                const elBtnEntryAllowAll = findElementChildByAttr(this._d.r, 'data-ot-entry-ua', 'allow');
+                const elBtnSettingsDenyAll = findElementChildByAttr(this._d.sr, 'data-ot-settings-ua', 'deny');
+                const elBtnSettingsAllowAll = findElementChildByAttr(this._d.sr, 'data-ot-settings-ua', 'allow');
+                elBtnEntryDenyAll.classList.remove('ot-active');
+                elBtnEntryAllowAll.classList.remove('ot-active');
+                elBtnSettingsDenyAll.classList.remove('ot-active');
+                elBtnSettingsAllowAll.classList.remove('ot-active');
+                if (!this._trackingGuard.hasConsent()) {
+                    elBtnEntryDenyAll.classList.add('ot-active');
+                    elBtnSettingsDenyAll.classList.add('ot-active');
+                }
+                else {
+                    elBtnEntryAllowAll.classList.add('ot-active');
+                    elBtnSettingsAllowAll.classList.add('ot-active');
+                }
+            }
+            // settings:services
             for (const srv of this._services) {
                 const elSrv = findElementChildByAttr(this._d.srvr, 'data-ot-srv', srv.name);
                 if (elSrv) {
                     const elState = findElementChildByAttr(elSrv, 'data-ot-srv-state');
                     elState.innerHTML = this._getServiceStateLabel(srv);
                     if (srv.consent.reviewed) {
-                        const elBtnDeny = findElementChildByAttr(elSrv, 'data-ot-srv-ua', 'deny');
-                        const elBtnAllow = findElementChildByAttr(elSrv, 'data-ot-srv-ua', 'allow');
+                        const elBtnDeny = findElementChildByAttr(elSrv, 'data-ot-settings-srv-ua', 'deny');
+                        const elBtnAllow = findElementChildByAttr(elSrv, 'data-ot-settings-srv-ua', 'allow');
                         elBtnDeny.classList.remove('ot-active');
                         elBtnAllow.classList.remove('ot-active');
                         if (!srv.consent.value)
@@ -419,13 +436,13 @@
                     {
                         t: 'Deny',
                         c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
-                        a: { 'data-ot-srv-ua': 'deny' },
+                        a: { 'data-ot-settings-srv-ua': 'deny' },
                         h: this._onDenyServicelClick.bind(this),
                     },
                     {
                         t: 'Allow',
                         c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
-                        a: { 'data-ot-srv-ua': 'allow' },
+                        a: { 'data-ot-settings-srv-ua': 'allow' },
                         h: this._onAllowServiceClick.bind(this),
                     },
                 ];
