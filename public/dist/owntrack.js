@@ -206,17 +206,6 @@
         }
         return found;
     };
-    const findElementChildByClass = (el, _class) => {
-        let found = null;
-        for (let i = 0; i < el.children.length; i++) {
-            const child = el.children[i];
-            if (child.classList.contains(_class))
-                found = child;
-            else if (!found)
-                found = findElementChildByClass(child, _class);
-        }
-        return found;
-    };
 
     class UIManager {
         constructor(trackingGuard) {
@@ -251,24 +240,26 @@
             const btns = [
                 {
                     t: 'Settings',
-                    c: ['ota-settings', 'ot-btn', 'ot-ghost'],
+                    c: ['otua-settings', 'ot-btn', 'ot-ghost'],
+                    a: { 'data-ot-global-ua': 'settings' },
                     h: this._onOpenSettingsClick.bind(this),
                 },
                 {
                     t: 'Deny',
-                    c: ['ota-deny', 'ot-btn', 'ota-deny'],
+                    c: ['otua-deny', 'ot-btn'],
+                    a: { 'data-ot-global-ua': 'deny' },
                     h: this._onDenyAllClick.bind(this),
                 },
                 {
                     t: 'Allow',
-                    c: ['ota-allow', 'ot-btn', 'ota-allow'],
+                    c: ['otua-allow', 'ot-btn'],
+                    a: { 'data-ot-global-ua': 'allow' },
                     h: this._onAllowAllClick.bind(this),
                 },
             ];
             const elEntryBtns = createElmt('div', ['ot-entry__btns']);
             for (const btn of btns) {
-                const elEntryBtn = document.createElement('button');
-                btn.c.forEach((c) => elEntryBtn.classList.add(c));
+                const elEntryBtn = createElmt('button', btn.c, btn.a);
                 elEntryBtn.innerHTML = btn.t;
                 elEntryBtn.addEventListener('click', btn.h);
                 elEntryBtns.append(elEntryBtn);
@@ -302,12 +293,14 @@
             const btns = [
                 {
                     t: 'Deny all',
-                    c: ['ota-deny', 'ot-btn', 'ota-deny'],
+                    c: ['otua-deny', 'ot-btn', 'otua-deny'],
+                    a: { 'data-ot-global-ua': 'deny' },
                     h: this._onDenyAllClick.bind(this),
                 },
                 {
                     t: 'Allow all',
-                    c: ['ota-allow', 'ot-btn', 'ota-allow'],
+                    c: ['otua-allow', 'ot-btn', 'otua-allow'],
+                    a: { 'data-ot-global-ua': 'allow' },
                     h: this._onAllowAllClick.bind(this),
                 },
             ];
@@ -315,7 +308,7 @@
                 'ot-settings__main-actions__btns',
             ]);
             for (const btn of btns) {
-                const elEntryBtn = createElmt('button', btn.c);
+                const elEntryBtn = createElmt('button', btn.c, btn.a);
                 elEntryBtn.innerHTML = btn.t;
                 elEntryBtn.addEventListener('click', btn.h);
                 elGActionsBtns.append(elEntryBtn);
@@ -329,14 +322,17 @@
             this._d.srvr.classList.add('ot-settings__services');
         }
         _render() {
+            // global DOM
+            // const elBtnDenyAll = findElementChildByAttr()
+            // services DOM
             for (const srv of this._services) {
                 const elSrv = findElementChildByAttr(this._d.srvr, 'data-ot-srv', srv.name);
                 if (elSrv) {
                     const elState = findElementChildByAttr(elSrv, 'data-ot-srv-state');
                     elState.innerHTML = this._getServiceStateLabel(srv);
                     if (srv.consent.reviewed) {
-                        const elBtnDeny = findElementChildByClass(elSrv, 'ota-deny');
-                        const elBtnAllow = findElementChildByClass(elSrv, 'ota-allow');
+                        const elBtnDeny = findElementChildByAttr(elSrv, 'data-ot-srv-ua', 'deny');
+                        const elBtnAllow = findElementChildByAttr(elSrv, 'data-ot-srv-ua', 'allow');
                         elBtnDeny.classList.remove('ot-active');
                         elBtnAllow.classList.remove('ot-active');
                         if (!srv.consent.value)
@@ -422,17 +418,19 @@
                 const btns = [
                     {
                         t: 'Deny',
-                        c: ['ota-deny', 'ot-btn', 'ot-btn-sm', 'ota-deny'],
+                        c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
+                        a: { 'data-ot-srv-ua': 'deny' },
                         h: this._onDenyServicelClick.bind(this),
                     },
                     {
                         t: 'Allow',
-                        c: ['ota-allow', 'ot-btn', 'ot-btn-sm', 'ota-allow'],
+                        c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
+                        a: { 'data-ot-srv-ua': 'allow' },
                         h: this._onAllowServiceClick.bind(this),
                     },
                 ];
                 for (const btn of btns) {
-                    const elServiceBtn = createElmt('button', btn.c);
+                    const elServiceBtn = createElmt('button', btn.c, btn.a);
                     elServiceBtn.innerHTML = btn.t;
                     elServiceBtn.addEventListener('click', (e) => btn.h(service.name, e));
                     elSrvBtns.append(elServiceBtn);

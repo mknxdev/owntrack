@@ -34,32 +34,32 @@
 .ot-root button.ot-btn.ot-ghost:hover {
   background-color: #f7f7f7;
 }
-.ot-root button.ot-btn.ota-allow,
-.ot-root button.ot-btn.ota-deny {
+.ot-root button.ot-btn.otua-allow,
+.ot-root button.ot-btn.otua-deny {
   color: #ffffff;
 }
-.ot-root button.ot-btn:not(.ot-active).ota-allow {
+.ot-root button.ot-btn:not(.ot-active).otua-allow {
   background-color: #9feca8;
 }
-.ot-root button.ot-btn:not(.ot-active).ota-allow:hover {
+.ot-root button.ot-btn:not(.ot-active).otua-allow:hover {
   background-color: #259031;
 }
-.ot-root button.ot-btn:not(.ot-active).ota-deny {
+.ot-root button.ot-btn:not(.ot-active).otua-deny {
   background-color: #ebabab;
 }
-.ot-root button.ot-btn:not(.ot-active).ota-deny:hover {
+.ot-root button.ot-btn:not(.ot-active).otua-deny:hover {
   background-color: #b61a1a;
 }
-.ot-root button.ot-btn.ot-active.ota-allow {
+.ot-root button.ot-btn.ot-active.otua-allow {
   background-color: #45b051;
 }
-.ot-root button.ot-btn.ot-active.ota-allow:hover {
+.ot-root button.ot-btn.ot-active.otua-allow:hover {
   background-color: #259031;
 }
-.ot-root button.ot-btn.ot-active.ota-deny {
+.ot-root button.ot-btn.ot-active.otua-deny {
   background-color: #d63a3a;
 }
-.ot-root button.ot-btn.ot-active.ota-deny:hover {
+.ot-root button.ot-btn.ot-active.otua-deny:hover {
   background-color: #b61a1a;
 }
 
