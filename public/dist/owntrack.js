@@ -19,6 +19,10 @@
                         throw new Error(`OwnTrack: Service: 'name' is required.`);
                     if (srv.label && typeof srv.label !== 'string')
                         throw new Error(`OwnTrack: Service: 'label' must be a string.`);
+                    if (srv.type && typeof srv.type !== 'string')
+                        throw new Error(`OwnTrack: Service: 'type' must be a string.`);
+                    if (srv.description && typeof srv.description !== 'string')
+                        throw new Error(`OwnTrack: Service: 'description' must be a string.`);
                     if (!srv.trackingScriptUrl)
                         throw new Error(`OwnTrack: Service: 'trackingScriptUrl' is required.`);
                     if (typeof srv.trackingScriptUrl !== 'string')
