@@ -1,6 +1,6 @@
 import { Config } from '../types'
 
-export const checkForValidInit = (config: Config): boolean => {
+export const checkForValidConfig = (config: Config): boolean => {
   try {
     // config
     if (!config)
@@ -30,6 +30,19 @@ export const checkForValidInit = (config: Config): boolean => {
           throw new Error(`OwnTrack: Service: 'handlers' must be an object.`)
       }
     }
+  } catch (err) {
+    console.error(err.message)
+    return false
+  }
+  return true
+}
+
+export const checkForValidServiceName = (name: string, services: string[]) => {
+  try {
+    if (!services.includes(name))
+      throw new Error(
+        `OwnTrack: '${name}' service is not registered.`,
+      )
   } catch (err) {
     console.error(err.message)
     return false

@@ -4,7 +4,7 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.OwnTrack = factory());
 })(this, (function () { 'use strict';
 
-    const checkForValidInit = (config) => {
+    const checkForValidConfig = (config) => {
         try {
             // config
             if (!config)
@@ -31,6 +31,17 @@
                         throw new Error(`OwnTrack: Service: 'handlers' must be an object.`);
                 }
             }
+        }
+        catch (err) {
+            console.error(err.message);
+            return false;
+        }
+        return true;
+    };
+    const checkForValidServiceName = (name, services) => {
+        try {
+            if (!services.includes(name))
+                throw new Error(`OwnTrack: '${name}' service is not registered.`);
         }
         catch (err) {
             console.error(err.message);
@@ -86,20 +97,37 @@
         constructor() {
             this._services = [];
             this._consents = [];
+            this._actionsQueue = [];
             this._consents = ls.getItem(LS_ITEM_NAME) || [];
-        }
-        _setFnGuard(handler) {
-            return () => {
-                return handler();
-            };
         }
         wrapService({ name, label, trackingScriptUrl, onInit, handlers, }) {
             // console.log(name, label, trackingScriptUrl, handlers)
             const srv = new TrackingServiceWrapper(name, label, onInit);
             for (const [fnName, fn] of Object.entries(handlers))
-                srv[fnName] = this._setFnGuard(fn);
+                srv[fnName] = this._setFnGuard(name, fn);
             this._services.push(srv);
-            return srv;
+            return {
+                name,
+                consent: { value: this.hasConsent(name), reviewed: this.isReviewed(name) },
+                tsw: srv,
+            };
+        }
+        _setFnGuard(srv, handler) {
+            return () => {
+                if (this.hasConsent(srv))
+                    return handler();
+                else if (!this.isReviewed(srv))
+                    this._actionsQueue.push({ srv, handler, processed: false });
+            };
+        }
+        _processActionsQueue() {
+            this._actionsQueue = this._actionsQueue.filter(action => {
+                if (!this.isReviewed(action.srv))
+                    return true;
+                if (this.hasConsent(action.srv))
+                    action.handler();
+                return false;
+            });
         }
         store() {
             const consents = this._services.map((srv) => ({
@@ -129,6 +157,7 @@
                     return consent;
                 });
             this.store();
+            this._processActionsQueue();
         }
         setUnreviewedConsents(value) {
             this._consents = this._consents.map((consent) => {
@@ -138,6 +167,7 @@
                 return consent;
             });
             this.store();
+            this._processActionsQueue();
         }
         getTrackingServices() {
             return this._services.map((srv) => ({
@@ -150,7 +180,7 @@
                         ? this._consents.filter((c) => c.srv === srv.name)[0].r
                         : false,
                 },
-                sw: srv,
+                tsw: srv,
             }));
         }
         isReviewed(service = '') {
@@ -486,7 +516,7 @@
                 const elSrvHeader = createElmt('div', ['ot-settings__service-header']);
                 const elSrvName = createElmt('p', ['ot-settings__service-name']);
                 const elSrvType = createElmt('p', ['ot-settings__service-type']);
-                elSrvName.innerHTML = service.sw.label;
+                elSrvName.innerHTML = service.tsw.label;
                 elSrvType.innerHTML = 'Tracking Measurement';
                 elSrvHeader.append(elSrvName);
                 elSrvHeader.append(elSrvType);
@@ -529,33 +559,25 @@
     class OwnTrack {
         constructor(config) {
             this._trackingGuard = new TrackingGuard();
+            this._services = [];
             this._ui = new UIProxy(this._trackingGuard);
-            const serviceWrappers = [];
             for (const service of config.services)
-                serviceWrappers.push(this._trackingGuard.wrapService(service));
+                this._services.push(this._trackingGuard.wrapService(service));
             this._trackingGuard.store();
-            const services = serviceWrappers.map((sw) => ({
-                name: sw.name,
-                consent: {
-                    value: this._trackingGuard.hasConsent(sw.name),
-                    reviewed: this._trackingGuard.isReviewed(sw.name),
-                },
-                sw,
-            }));
-            this._ui.initSettingsService(services);
+            this._ui.initSettingsService(this._services);
             window.addEventListener('DOMContentLoaded', this._onReady.bind(this));
         }
         _onReady() {
             this._ui.mount();
-            console.log(this);
         }
         service(name) {
-            console.log(this);
+            if (checkForValidServiceName(name, this._services.map(s => s.name)))
+                return this._services.filter(s => s.name === name)[0].tsw;
         }
     }
 
     var index = (config) => {
-        if (!window._OT && checkForValidInit(config))
+        if (!window._OT && checkForValidConfig(config))
             window._OT = new OwnTrack(config);
         return window._OT;
     };

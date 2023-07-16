@@ -30,7 +30,10 @@
               gtag('config', 'G-JSRE6N82F5')
             },
             handlers: {
-              setDimensions: () => {},
+              initFBPixel: () => {
+                console.log('fbpx.initFBPixel')},
+              sendEvent: () => {
+                console.log('fbpx.sendEvent')},
             },
           },
           {
@@ -47,14 +50,18 @@
               gtag('config', 'G-JSRE6N82F5')
             },
             handlers: {
-              setDimensions: () => {},
+              setDimensions: () => {
+                console.log('ga.setDimensions')
+              },
             },
           },
         ],
       })
       // ot.service('ga')
-      // const ot2 = OwnTrack()
-      // console.log(ot, ot2)
+      // console.log(ot.service('fbpx'));
+      ot.service('ga').setDimensions()
+      ot.service('fbpx').initFBPixel()
+      ot.service('fbpx').sendEvent()
     </script>
     <link rel="stylesheet" href="./dist/owntrack.css" />
   </head>

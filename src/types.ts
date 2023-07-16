@@ -1,4 +1,4 @@
-import ServiceWrapper from './TrackingServiceWrapper'
+import TrackingServiceWrapper from './TrackingServiceWrapper'
 
 export type ConfigService = {
   name: string
@@ -17,7 +17,7 @@ export type Consent = {
 export type TrackingServiceLayer = {
   name: string
   consent: Consent
-  sw: ServiceWrapper
+  tsw: TrackingServiceWrapper
 }
 export type TrackingServiceConsent = {
   srv: string

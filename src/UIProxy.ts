@@ -282,7 +282,7 @@ export default class UIProxy {
       const elSrvHeader = createElmt('div', ['ot-settings__service-header'])
       const elSrvName = createElmt('p', ['ot-settings__service-name'])
       const elSrvType = createElmt('p', ['ot-settings__service-type'])
-      elSrvName.innerHTML = service.sw.label
+      elSrvName.innerHTML = service.tsw.label
       elSrvType.innerHTML = 'Tracking Measurement'
       elSrvHeader.append(elSrvName)
       elSrvHeader.append(elSrvType)

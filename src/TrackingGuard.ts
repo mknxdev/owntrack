@@ -6,20 +6,21 @@ import {
 import ls from './helpers/ls'
 import TrackingServiceWrapper from './TrackingServiceWrapper'
 
+type Action = {
+  srv: string
+  handler: Function
+  processed: boolean
+}
+
 const LS_ITEM_NAME = 'owntrack_uc'
 
 export default class TrackingGuard {
   _services: TrackingServiceWrapper[] = []
   _consents: TrackingServiceConsent[] = []
+  _actionsQueue: Action[] = []
 
   constructor() {
     this._consents = ls.getItem(LS_ITEM_NAME) || []
-  }
-
-  _setFnGuard(handler: Function) {
-    return () => {
-      return handler()
-    }
   }
 
   wrapService({
@@ -28,13 +29,30 @@ export default class TrackingGuard {
     trackingScriptUrl,
     onInit,
     handlers,
-  }: ConfigService): TrackingServiceWrapper {
+  }: ConfigService): TrackingServiceLayer {
     // console.log(name, label, trackingScriptUrl, handlers)
     const srv = new TrackingServiceWrapper(name, label, onInit)
     for (const [fnName, fn] of Object.entries(handlers))
-      srv[fnName] = this._setFnGuard(fn)
+      srv[fnName] = this._setFnGuard(name, fn)
     this._services.push(srv)
-    return srv
+    return {
+      name,
+      consent: { value: this.hasConsent(name), reviewed: this.isReviewed(name) },
+      tsw: srv,
+    }
+  }
+  _setFnGuard(srv: string, handler: Function) {
+    return () => {
+      if (this.hasConsent(srv)) return handler()
+      else if (!this.isReviewed(srv)) this._actionsQueue.push({ srv, handler, processed: false })
+    }
+  }
+  _processActionsQueue() {
+    this._actionsQueue = this._actionsQueue.filter(action => {
+      if (!this.isReviewed(action.srv)) return true
+      if (this.hasConsent(action.srv)) action.handler()
+      return false
+    })
   }
   store(): void {
     const consents = this._services.map((srv: TrackingServiceWrapper) => ({
@@ -64,6 +82,7 @@ export default class TrackingGuard {
         return consent
       })
     this.store()
+    this._processActionsQueue()
   }
   setUnreviewedConsents(value: boolean): void {
     this._consents = this._consents.map((consent) => {
@@ -72,6 +91,7 @@ export default class TrackingGuard {
       return consent
     })
     this.store()
+    this._processActionsQueue()
   }
   getTrackingServices(): TrackingServiceLayer[] {
     return this._services.map(
@@ -85,7 +105,7 @@ export default class TrackingGuard {
             ? this._consents.filter((c) => c.srv === srv.name)[0].r
             : false,
         },
-        sw: srv,
+        tsw: srv,
       }),
     )
   }

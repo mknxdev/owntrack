@@ -1,5 +1,5 @@
 import { Config } from './types'
-import { checkForValidInit } from './helpers/init'
+import { checkForValidConfig } from './helpers/init'
 import OwnTrack from './OwnTrack'
 import './css/ot.css'
 
@@ -10,7 +10,7 @@ declare global {
 }
 
 export default (config: Config): OwnTrack => {
-  if (!window._OT && checkForValidInit(config))
+  if (!window._OT && checkForValidConfig(config))
     window._OT = new OwnTrack(config)
   return window._OT
 }
