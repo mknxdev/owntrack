@@ -1,11 +1,11 @@
-import { ConfigService, TrackingServiceConsent } from './types'
+import { ConfigService, TrackingServiceConsent, TrackingService } from './types'
 import ls from './helpers/ls'
-import ServiceWrapper from './ServiceWrapper'
+import TrackingServiceWrapper from './TrackingServiceWrapper'
 
 const LS_ITEM_NAME = 'owntrack_uc'
 
 export default class TrackingGuard {
-  _services: ServiceWrapper[] = []
+  _services: TrackingServiceWrapper[] = []
   _consents: TrackingServiceConsent[] = []
 
   constructor() {
@@ -24,29 +24,59 @@ export default class TrackingGuard {
     trackingScriptUrl,
     onInit,
     handlers,
-  }: ConfigService): ServiceWrapper {
+  }: ConfigService): TrackingServiceWrapper {
     // console.log(name, label, trackingScriptUrl, handlers)
-    const srv = new ServiceWrapper(name, label, onInit)
+    const srv = new TrackingServiceWrapper(name, label, onInit)
     for (const [fnName, fn] of Object.entries(handlers))
       srv[fnName] = this._setFnGuard(fn)
     this._services.push(srv)
     return srv
   }
-
-  save(): void {
-    const consents = this._services.map((srv: ServiceWrapper) => ({
-      srv: srv.n,
-      v: this._consents.some((c) => c.srv === srv.n)
-        ? this._consents.filter((c) => c.srv === srv.n)[0].v
+  store(): void {
+    const consents = this._services.map((srv: TrackingServiceWrapper) => ({
+      srv: srv.name,
+      v: this._consents.some((c) => c.srv === srv.name)
+        ? this._consents.filter((c) => c.srv === srv.name)[0].v
         : false,
-      r: this._consents.some((c) => c.srv === srv.n)
-        ? this._consents.filter((c) => c.srv === srv.n)[0].r
+      r: this._consents.some((c) => c.srv === srv.name)
+        ? this._consents.filter((c) => c.srv === srv.name)[0].r
         : false,
     }))
     this._consents = consents
     ls.setItem(LS_ITEM_NAME, consents)
   }
-
+  updateConsent(value: boolean, service = ''): void {
+    if (!service)
+      for (const consent of this._consents) {
+        consent.v = value
+        consent.r = true
+      }
+    else
+      this._consents = this._consents.map((consent) => {
+        if (consent.srv === service) {
+          consent.v = value
+          consent.r = true
+        }
+        return consent
+      })
+    this.store()
+  }
+  getTrackingServices(): TrackingService[] {
+    return this._services.map(
+      (srv: TrackingServiceWrapper): TrackingService => ({
+        name: srv.name,
+        consent: {
+          value: this._consents.some((c) => c.srv === srv.name)
+            ? this._consents.filter((c) => c.srv === srv.name)[0].v
+            : false,
+          reviewed: this._consents.some((c) => c.srv === srv.name)
+            ? this._consents.filter((c) => c.srv === srv.name)[0].r
+            : false,
+        },
+        sw: srv,
+      }),
+    )
+  }
   isReviewed(service: string = ''): boolean {
     if (!service) return this._consents.every((consent) => consent.r)
     return !!this._consents.filter(

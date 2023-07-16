@@ -1,4 +1,4 @@
-import ServiceWrapper from './ServiceWrapper'
+import ServiceWrapper from './TrackingServiceWrapper'
 
 export type ConfigService = {
   name: string
@@ -10,7 +10,7 @@ export type ConfigService = {
 export type Config = {
   services: ConfigService[]
 }
-export type OTService = {
+export type TrackingService = {
   name: string
   consent: {
     value: boolean
@@ -22,7 +22,4 @@ export type TrackingServiceConsent = {
   srv: string
   v: boolean
   r: boolean
-}
-export type TrackingService = TrackingServiceConsent & {
-  label: string
 }

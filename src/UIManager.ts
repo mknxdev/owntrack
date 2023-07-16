@@ -1,8 +1,10 @@
-import { OTService } from './types'
+import { TrackingService } from './types'
 import { createElmt, generateIconElement } from './helpers/ui'
+import TrackingGuard from './TrackingGuard'
 
 export default class UIManager {
-  _services: OTService[] = []
+  _trackingGuard: TrackingGuard
+  _services: TrackingService[] = []
   _isConsentReviewed = false
   // _d: DOM
   // _d.r: root
@@ -14,7 +16,8 @@ export default class UIManager {
     srvr: createElmt('div'),
   }
 
-  constructor() {
+  constructor(trackingGuard: TrackingGuard) {
+    this._trackingGuard = trackingGuard
     this._initBase()
     this._initEntry()
     this._initSettings()
@@ -35,17 +38,17 @@ export default class UIManager {
     const btns = [
       {
         t: 'Settings',
-        c: ['settings', 'ot-btn', 'ot-ghost'],
+        c: ['ota-settings', 'ot-btn', 'ot-ghost'],
         h: this._onOpenSettingsClick.bind(this),
       },
       {
         t: 'Deny',
-        c: ['deny', 'ot-btn', 'ot-error'],
+        c: ['ota-deny', 'ot-btn', 'ota-deny'],
         h: this._onDenyAllClick.bind(this),
       },
       {
         t: 'Allow',
-        c: ['allow', 'ot-btn', 'ot-success'],
+        c: ['ota-allow', 'ot-btn', 'ota-allow'],
         h: this._onAllowAllClick.bind(this),
       },
     ]
@@ -74,7 +77,7 @@ export default class UIManager {
     this._d.sr.append(elSettings)
     // content
     let content: Element
-    for (const i in this._d.sr.children)
+    for (let i = 0; i < this._d.sr.children.length; i++)
       if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
         content = this._d.sr.children.item(Number(i))
     const elHeadline = createElmt('h1')
@@ -86,12 +89,12 @@ export default class UIManager {
     const btns = [
       {
         t: 'Deny all',
-        c: ['deny', 'ot-btn', 'ot-error'],
+        c: ['ota-deny', 'ot-btn', 'ota-deny'],
         h: this._onDenyAllClick.bind(this),
       },
       {
         t: 'Allow all',
-        c: ['allow', 'ot-btn', 'ot-success'],
+        c: ['ota-allow', 'ot-btn', 'ota-allow'],
         h: this._onAllowAllClick.bind(this),
       },
     ]
@@ -112,9 +115,15 @@ export default class UIManager {
   _initServices(): void {
     this._d.srvr.classList.add('ot-settings__services')
   }
-
+  _render(): void {
+    const { children: services } = this._d.srvr
+    for (let i = 0; i < services.length; i++) {
+      const service: Element = services[i]
+      console.log(service, this._services)
+    }
+  }
   _onOpenSettingsClick(): void {
-    for (const i in this._d.r.children)
+    for (let i = 0; i < this._d.r.children.length; i++)
       if (
         !this._d.r.children
           .item(Number(i))
@@ -123,7 +132,7 @@ export default class UIManager {
         this._d.r.append(this._d.sr)
   }
   _onCloseSettingsClick(): void {
-    for (const i in this._d.r.children)
+    for (let i = 0; i < this._d.r.children.length; i++)
       if (
         this._d.r.children
           .item(Number(i))
@@ -132,40 +141,48 @@ export default class UIManager {
         this._d.sr.remove()
   }
   _onAllowAllClick(): void {
-    console.log('allowed')
+    this._trackingGuard.updateConsent(true)
+    this._services = this._trackingGuard.getTrackingServices()
+    this._render()
   }
   _onDenyAllClick(): void {
-    console.log('denied')
+    this._trackingGuard.updateConsent(false)
+    this._services = this._trackingGuard.getTrackingServices()
+    this._render()
   }
   _onAllowServiceClick(service: string): void {
-    console.log('allowed', service)
+    this._trackingGuard.updateConsent(true, service)
+    this._services = this._trackingGuard.getTrackingServices()
+    this._render()
   }
   _onDenyServicelClick(service: string): void {
-    console.log('denied', service)
+    this._trackingGuard.updateConsent(false, service)
+    this._services = this._trackingGuard.getTrackingServices()
+    this._render()
   }
 
   mount(): void {
     let settings: Element
-    for (const i in this._d.sr.children)
+    for (let i = 0; i < this._d.sr.children.length; i++)
       if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
         settings = this._d.sr.children.item(Number(i))
     settings.append(this._d.srvr)
     this._d.r.append(this._d.sr)
     document.body.append(this._d.r)
   }
-  _getServiceStateLabel(srv: OTService): string {
+  _getServiceStateLabel(srv: TrackingService): string {
     if (!srv.consent.reviewed) return 'Pending'
     if (srv.consent.value) return 'Allowed'
     return 'Denied'
   }
-  initSettingsService(services: OTService[]): void {
+  initSettingsService(services: TrackingService[]): void {
     this._services = services
     for (const service of services) {
       const elSrv = createElmt('div', ['ot-settings__service', service.name])
       const elSrvHeader = createElmt('div', ['ot-settings__service-header'])
       const elSrvName = createElmt('p', ['ot-settings__service-name'])
       const elSrvType = createElmt('p', ['ot-settings__service-type'])
-      elSrvName.innerHTML = service.sw.name
+      elSrvName.innerHTML = service.sw.label
       elSrvType.innerHTML = 'Tracking Measurement'
       elSrvHeader.append(elSrvName)
       elSrvHeader.append(elSrvType)
@@ -178,12 +195,12 @@ export default class UIManager {
       const btns = [
         {
           t: 'Deny',
-          c: ['deny', 'ot-btn', 'ot-btn-sm', 'ot-error'],
+          c: ['ota-deny', 'ot-btn', 'ot-btn-sm', 'ota-deny'],
           h: this._onDenyServicelClick.bind(this),
         },
         {
           t: 'Allow',
-          c: ['allow', 'ot-btn', 'ot-btn-sm', 'ot-success'],
+          c: ['ota-allow', 'ot-btn', 'ot-btn-sm', 'ota-allow'],
           h: this._onAllowServiceClick.bind(this),
         },
       ]

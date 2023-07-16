@@ -1,33 +1,32 @@
-import { Config, OTService } from './types'
+import { Config, TrackingService } from './types'
 import TrackingGuard from './TrackingGuard'
 import UIManager from './UIManager'
-import ServiceWrapper from './ServiceWrapper'
+import TrackingServiceWrapper from './TrackingServiceWrapper'
 
 export default class OwnTrack {
   _trackingGuard: TrackingGuard = new TrackingGuard()
-  _uiManager: UIManager = new UIManager()
-  _services: OTService[] = []
+  _uiManager: UIManager = new UIManager(this._trackingGuard)
 
   constructor(config: Config) {
-    const serviceWrappers: ServiceWrapper[] = []
+    const serviceWrappers: TrackingServiceWrapper[] = []
     for (const service of config.services)
       serviceWrappers.push(this._trackingGuard.wrapService(service))
-    this._trackingGuard.save()
-    this._services = serviceWrappers.map((sw) => ({
-      name: sw.n,
+    this._trackingGuard.store()
+    const services: TrackingService[] = serviceWrappers.map((sw) => ({
+      name: sw.name,
       consent: {
-        value: this._trackingGuard.hasConsent(sw.n),
-        reviewed: this._trackingGuard.isReviewed(sw.n),
+        value: this._trackingGuard.hasConsent(sw.name),
+        reviewed: this._trackingGuard.isReviewed(sw.name),
       },
       sw,
     }))
-    console.log(this._services)
-    this._uiManager.initSettingsService(this._services)
+    this._uiManager.initSettingsService(services)
     this._uiManager.setConsentReviewed(this._trackingGuard.isReviewed())
     window.addEventListener('DOMContentLoaded', this._onReady.bind(this))
   }
   _onReady() {
     this._uiManager.mount()
+    console.log(this)
   }
 
   service(name: string) {
