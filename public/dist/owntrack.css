@@ -161,6 +161,7 @@
   border: 1px solid #dddddd;
 }
 .ot-root .ot-settings .ot-settings__service {
+  min-height: 62px;
   display: flex;
   justify-content: space-between;
   align-items: stretch;
@@ -171,14 +172,19 @@
 }
 .ot-root .ot-settings .ot-settings__service-header {
   flex: 0 0 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 10px 10px;
   background-color: #f3f3f3;
 }
 .ot-root .ot-settings .ot-settings__service-header p {
+  margin: 0 0 6px;
+}
+.ot-root .ot-settings .ot-settings__service-header p:last-of-type {
   margin: 0;
 }
 .ot-root .ot-settings .ot-settings__service-header p.ot-settings__service-name {
-  margin: 0 0 10px;
   font-size: 14px;
   font-weight: 700;
 }
@@ -191,12 +197,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 10px 0 0;
-}
-.ot-root .ot-settings .ot-settings__service-content .ot-settings__service-info {
-  padding: 0 0 0 15px;
+  padding: 10px 10px 10px 15px;
 }
 .ot-root .ot-settings .ot-settings__service-content .ot-settings__service-btns {
   display: flex;
   gap: 10px;
+}
+.ot-root .ot-settings .ot-settings__service-content .ot-settings__service-desc {
+  font-size: 14px;
 }

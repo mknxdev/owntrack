@@ -3,6 +3,8 @@ import TrackingServiceWrapper from './TrackingServiceWrapper'
 export type ConfigService = {
   name: string
   label?: string
+  type?: string
+  description?: string
   trackingScriptUrl: string
   onInit: Function
   handlers: object
@@ -15,7 +17,10 @@ export type Consent = {
   reviewed: boolean
 }
 export type TrackingServiceLayer = {
+  isEditable: boolean
   name: string
+  type?: string
+  description?: string
   consent: Consent
   tsw: TrackingServiceWrapper
 }

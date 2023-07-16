@@ -18,14 +18,23 @@ export default class TrackingGuard {
   _services: TrackingServiceWrapper[] = []
   _consents: TrackingServiceConsent[] = []
   _actionsQueue: Action[] = []
+  // rc: required cookies
+  _rcService: TrackingServiceLayer = {
+    isEditable: false,
+    name: '_rc',
+    description: 'This website uses some cookies needed for it to work. They cannot be disabled.',
+    consent: { value: true, reviewed: true },
+    tsw: new TrackingServiceWrapper('_rc', 'Required cookies', () => {})
+  }
 
   constructor() {
     this._consents = ls.getItem(LS_ITEM_NAME) || []
   }
-
   wrapService({
     name,
     label,
+    type,
+    description,
     trackingScriptUrl,
     onInit,
     handlers,
@@ -36,7 +45,10 @@ export default class TrackingGuard {
       srv[fnName] = this._setFnGuard(name, fn)
     this._services.push(srv)
     return {
+      isEditable: true,
       name,
+      type,
+      description,
       consent: { value: this.hasConsent(name), reviewed: this.isReviewed(name) },
       tsw: srv,
     }
@@ -93,9 +105,13 @@ export default class TrackingGuard {
     this.store()
     this._processActionsQueue()
   }
+  getRCService(): TrackingServiceLayer {
+    return this._rcService
+  }
   getTrackingServices(): TrackingServiceLayer[] {
     return this._services.map(
       (srv: TrackingServiceWrapper): TrackingServiceLayer => ({
+        isEditable: true,
         name: srv.name,
         consent: {
           value: this._consents.some((c) => c.srv === srv.name)

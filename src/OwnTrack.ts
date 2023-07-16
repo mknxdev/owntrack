@@ -11,9 +11,12 @@ export default class OwnTrack {
 
   constructor(config: Config) {
     for (const service of config.services)
-    this._services.push(this._trackingGuard.wrapService(service))
+      this._services.push(this._trackingGuard.wrapService(service))
     this._trackingGuard.store()
-    this._ui.initSettingsService(this._services)
+    this._ui.initSettingsServices([
+      this._trackingGuard.getRCService(),
+      ...this._services
+    ])
     window.addEventListener('DOMContentLoaded', this._onReady.bind(this))
   }
   _onReady() {

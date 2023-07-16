@@ -16,29 +16,31 @@
     <script>
       const ot = OwnTrack({
         services: [
-          {
-            name: 'fbpx',
-            label: 'Facebook Pixel',
-            trackingScriptUrl:
-              'https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5',
-            onInit: () => {
-              window.dataLayer = window.dataLayer || []
-              function gtag() {
-                dataLayer.push(arguments)
-              }
-              gtag('js', new Date())
-              gtag('config', 'G-JSRE6N82F5')
-            },
-            handlers: {
-              initFBPixel: () => {
-                console.log('fbpx.initFBPixel')},
-              sendEvent: () => {
-                console.log('fbpx.sendEvent')},
-            },
-          },
+          // {
+          //   name: 'fbpx',
+          //   label: 'Facebook Pixel',
+          //   trackingScriptUrl:
+          //     'https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5',
+          //   onInit: () => {
+          //     window.dataLayer = window.dataLayer || []
+          //     function gtag() {
+          //       dataLayer.push(arguments)
+          //     }
+          //     gtag('js', new Date())
+          //     gtag('config', 'G-JSRE6N82F5')
+          //   },
+          //   handlers: {
+          //     initFBPixel: () => {
+          //       console.log('fbpx.initFBPixel')},
+          //     sendEvent: () => {
+          //       console.log('fbpx.sendEvent')},
+          //   },
+          // },
           {
             name: 'ga',
             label: 'Google Analytics V4',
+            type: 'Analytics',
+            description: 'The Google all-in-one analytics tool.',
             trackingScriptUrl:
               'https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5',
             onInit: () => {
@@ -60,8 +62,7 @@
       // ot.service('ga')
       // console.log(ot.service('fbpx'));
       ot.service('ga').setDimensions()
-      ot.service('fbpx').initFBPixel()
-      ot.service('fbpx').sendEvent()
+      console.log(ot);
     </script>
     <link rel="stylesheet" href="./dist/owntrack.css" />
   </head>

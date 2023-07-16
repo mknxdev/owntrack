@@ -98,16 +98,27 @@
             this._services = [];
             this._consents = [];
             this._actionsQueue = [];
+            // rc: required cookies
+            this._rcService = {
+                isEditable: false,
+                name: '_rc',
+                description: 'This website uses some cookies needed for it to work. They cannot be disabled.',
+                consent: { value: true, reviewed: true },
+                tsw: new TrackingServiceWrapper('_rc', 'Required cookies', () => { })
+            };
             this._consents = ls.getItem(LS_ITEM_NAME) || [];
         }
-        wrapService({ name, label, trackingScriptUrl, onInit, handlers, }) {
+        wrapService({ name, label, type, description, trackingScriptUrl, onInit, handlers, }) {
             // console.log(name, label, trackingScriptUrl, handlers)
             const srv = new TrackingServiceWrapper(name, label, onInit);
             for (const [fnName, fn] of Object.entries(handlers))
                 srv[fnName] = this._setFnGuard(name, fn);
             this._services.push(srv);
             return {
+                isEditable: true,
                 name,
+                type,
+                description,
                 consent: { value: this.hasConsent(name), reviewed: this.isReviewed(name) },
                 tsw: srv,
             };
@@ -169,8 +180,12 @@
             this.store();
             this._processActionsQueue();
         }
+        getRCService() {
+            return this._rcService;
+        }
         getTrackingServices() {
             return this._services.map((srv) => ({
+                isEditable: true,
                 name: srv.name,
                 consent: {
                     value: this._consents.some((c) => c.srv === srv.name)
@@ -304,13 +319,13 @@
                     t: 'Deny',
                     c: ['otua-deny', 'ot-btn'],
                     a: { 'data-ot-entry-ua': 'deny' },
-                    h: this._onDenyAllClick.bind(this),
+                    h: this._onDenyAllServicesClick.bind(this),
                 },
                 {
                     t: 'Allow',
                     c: ['otua-allow', 'ot-btn'],
                     a: { 'data-ot-entry-ua': 'allow' },
-                    h: this._onAllowAllClick.bind(this),
+                    h: this._onAllowAllServicesClick.bind(this),
                 },
                 {
                     i: 'close',
@@ -369,13 +384,13 @@
                     t: 'Deny all',
                     c: ['otua-deny', 'ot-btn', 'otua-deny'],
                     a: { 'data-ot-settings-ua': 'deny' },
-                    h: this._onDenyAllClick.bind(this),
+                    h: this._onDenyAllServicesClick.bind(this),
                 },
                 {
                     t: 'Allow all',
                     c: ['otua-allow', 'ot-btn', 'otua-allow'],
                     a: { 'data-ot-settings-ua': 'allow' },
-                    h: this._onAllowAllClick.bind(this),
+                    h: this._onAllowAllServicesClick.bind(this),
                 },
             ];
             const elGActionsBtns = createElmt('div', [
@@ -431,15 +446,18 @@
                 const elSrv = findElementChildByAttr(this._d.srvr, 'data-ot-srv', srv.name);
                 if (elSrv) {
                     const elState = findElementChildByAttr(elSrv, 'data-ot-srv-state');
-                    elState.innerHTML = this._getServiceStateLabel(srv);
+                    if (elState)
+                        elState.innerHTML = this._getServiceStateLabel(srv);
                     const elBtnDeny = findElementChildByAttr(elSrv, 'data-ot-settings-srv-ua', 'deny');
                     const elBtnAllow = findElementChildByAttr(elSrv, 'data-ot-settings-srv-ua', 'allow');
-                    elBtnDeny.classList.remove('ot-active');
-                    elBtnAllow.classList.remove('ot-active');
-                    if (srv.consent.reviewed) {
-                        if (!srv.consent.value)
+                    if (elBtnDeny) {
+                        elBtnDeny.classList.remove('ot-active');
+                        if (srv.consent.reviewed && !srv.consent.value)
                             elBtnDeny.classList.add('ot-active');
-                        else
+                    }
+                    if (elBtnAllow) {
+                        elBtnAllow.classList.remove('ot-active');
+                        if (srv.consent.reviewed && srv.consent.value)
                             elBtnAllow.classList.add('ot-active');
                     }
                 }
@@ -469,12 +487,12 @@
                 this._d.er.remove();
             this._render();
         }
-        _onAllowAllClick() {
+        _onAllowAllServicesClick() {
             this._trackingGuard.setConsent(true);
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
         }
-        _onDenyAllClick() {
+        _onDenyAllServicesClick() {
             this._trackingGuard.setConsent(false);
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
@@ -484,10 +502,17 @@
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
         }
-        _onDenyServicelClick(service) {
+        _onDenyServiceClick(service) {
             this._trackingGuard.setConsent(false, service);
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
+        }
+        _getServiceStateLabel(srv) {
+            if (!srv.consent.reviewed)
+                return 'Pending';
+            if (srv.consent.value)
+                return 'Allowed';
+            return 'Denied';
         }
         mount() {
             this._render();
@@ -500,14 +525,7 @@
                 this._d.r.append(this._d.sr);
             document.body.append(this._d.r);
         }
-        _getServiceStateLabel(srv) {
-            if (!srv.consent.reviewed)
-                return 'Pending';
-            if (srv.consent.value)
-                return 'Allowed';
-            return 'Denied';
-        }
-        initSettingsService(services) {
+        initSettingsServices(services) {
             this._services = services;
             for (const service of services) {
                 const elSrv = createElmt('div', ['ot-settings__service'], {
@@ -515,40 +533,58 @@
                 });
                 const elSrvHeader = createElmt('div', ['ot-settings__service-header']);
                 const elSrvName = createElmt('p', ['ot-settings__service-name']);
-                const elSrvType = createElmt('p', ['ot-settings__service-type']);
-                elSrvName.innerHTML = service.tsw.label;
-                elSrvType.innerHTML = 'Tracking Measurement';
-                elSrvHeader.append(elSrvName);
-                elSrvHeader.append(elSrvType);
                 const elSrvContent = createElmt('div', ['ot-settings__service-content']);
                 const elSrvInfo = createElmt('div', ['ot-settings__service-info']);
-                const elSrvState = createElmt('div', ['ot-settings__service-state'], {
-                    'data-ot-srv-state': '',
-                });
-                elSrvInfo.append(elSrvState);
-                const elSrvBtns = createElmt('div', ['ot-settings__service-btns']);
-                const btns = [
-                    {
-                        t: 'Deny',
-                        c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
-                        a: { 'data-ot-settings-srv-ua': 'deny' },
-                        h: this._onDenyServicelClick.bind(this),
-                    },
-                    {
-                        t: 'Allow',
-                        c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
-                        a: { 'data-ot-settings-srv-ua': 'allow' },
-                        h: this._onAllowServiceClick.bind(this),
-                    },
-                ];
-                for (const btn of btns) {
-                    const elServiceBtn = createElmt('button', btn.c, btn.a);
-                    elServiceBtn.innerHTML = btn.t;
-                    elServiceBtn.addEventListener('click', (e) => btn.h(service.name, e));
-                    elSrvBtns.append(elServiceBtn);
+                let elSrvType;
+                if (service.type) {
+                    elSrvType = createElmt('p', ['ot-settings__service-type']);
+                    elSrvType.innerHTML = service.type;
+                }
+                elSrvName.innerHTML = service.tsw.label;
+                elSrvHeader.append(elSrvName);
+                if (elSrvType)
+                    elSrvHeader.append(elSrvType);
+                let elSrvDesc;
+                if (service.description) {
+                    elSrvDesc = createElmt('div', ['ot-settings__service-desc']);
+                    elSrvDesc.innerHTML = service.description;
+                }
+                let elSrvState;
+                if (service.isEditable)
+                    elSrvState = createElmt('div', ['ot-settings__service-state'], {
+                        'data-ot-srv-state': '',
+                    });
+                if (elSrvDesc)
+                    elSrvInfo.append(elSrvDesc);
+                if (elSrvState)
+                    elSrvInfo.append(elSrvState);
+                let elSrvBtns;
+                if (service.isEditable) {
+                    elSrvBtns = createElmt('div', ['ot-settings__service-btns']);
+                    const btns = [
+                        {
+                            t: 'Deny',
+                            c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
+                            a: { 'data-ot-settings-srv-ua': 'deny' },
+                            h: this._onDenyServiceClick.bind(this),
+                        },
+                        {
+                            t: 'Allow',
+                            c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
+                            a: { 'data-ot-settings-srv-ua': 'allow' },
+                            h: this._onAllowServiceClick.bind(this),
+                        },
+                    ];
+                    for (const btn of btns) {
+                        const elServiceBtn = createElmt('button', btn.c, btn.a);
+                        elServiceBtn.innerHTML = btn.t;
+                        elServiceBtn.addEventListener('click', (e) => btn.h(service.name, e));
+                        elSrvBtns.append(elServiceBtn);
+                    }
                 }
                 elSrvContent.append(elSrvInfo);
-                elSrvContent.append(elSrvBtns);
+                if (elSrvBtns)
+                    elSrvContent.append(elSrvBtns);
                 elSrv.append(elSrvHeader);
                 elSrv.append(elSrvContent);
                 this._d.srvr.append(elSrv);
@@ -564,7 +600,10 @@
             for (const service of config.services)
                 this._services.push(this._trackingGuard.wrapService(service));
             this._trackingGuard.store();
-            this._ui.initSettingsService(this._services);
+            this._ui.initSettingsServices([
+                this._trackingGuard.getRCService(),
+                ...this._services
+            ]);
             window.addEventListener('DOMContentLoaded', this._onReady.bind(this));
         }
         _onReady() {

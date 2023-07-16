@@ -29,7 +29,6 @@ export default class UIProxy {
     this._initSettings()
     this._initServices()
   }
-
   _initBase(): void {
     this._d.r = document.createElement('div')
     this._d.r.classList.add('ot-root')
@@ -52,13 +51,13 @@ export default class UIProxy {
         t: 'Deny',
         c: ['otua-deny', 'ot-btn'],
         a: { 'data-ot-entry-ua': 'deny' },
-        h: this._onDenyAllClick.bind(this),
+        h: this._onDenyAllServicesClick.bind(this),
       },
       {
         t: 'Allow',
         c: ['otua-allow', 'ot-btn'],
         a: { 'data-ot-entry-ua': 'allow' },
-        h: this._onAllowAllClick.bind(this),
+        h: this._onAllowAllServicesClick.bind(this),
       },
       {
         i: 'close',
@@ -116,13 +115,13 @@ export default class UIProxy {
         t: 'Deny all',
         c: ['otua-deny', 'ot-btn', 'otua-deny'],
         a: { 'data-ot-settings-ua': 'deny' },
-        h: this._onDenyAllClick.bind(this),
+        h: this._onDenyAllServicesClick.bind(this),
       },
       {
         t: 'Allow all',
         c: ['otua-allow', 'ot-btn', 'otua-allow'],
         a: { 'data-ot-settings-ua': 'allow' },
-        h: this._onAllowAllClick.bind(this),
+        h: this._onAllowAllServicesClick.bind(this),
       },
     ]
     const elGActionsBtns = createElmt('div', [
@@ -191,7 +190,7 @@ export default class UIProxy {
       )
       if (elSrv) {
         const elState = findChildByAttr(elSrv, 'data-ot-srv-state')
-        elState.innerHTML = this._getServiceStateLabel(srv)
+        if (elState) elState.innerHTML = this._getServiceStateLabel(srv)
         const elBtnDeny = findChildByAttr(
           elSrv,
           'data-ot-settings-srv-ua',
@@ -202,11 +201,15 @@ export default class UIProxy {
           'data-ot-settings-srv-ua',
           'allow',
         )
-        elBtnDeny.classList.remove('ot-active')
-        elBtnAllow.classList.remove('ot-active')
-        if (srv.consent.reviewed) {
-          if (!srv.consent.value) elBtnDeny.classList.add('ot-active')
-          else elBtnAllow.classList.add('ot-active')
+        if (elBtnDeny) {
+          elBtnDeny.classList.remove('ot-active')
+          if (srv.consent.reviewed && !srv.consent.value)
+            elBtnDeny.classList.add('ot-active')
+        }
+        if (elBtnAllow) {
+          elBtnAllow.classList.remove('ot-active')
+          if (srv.consent.reviewed && srv.consent.value)
+          elBtnAllow.classList.add('ot-active')
         }
       }
     }
@@ -237,12 +240,12 @@ export default class UIProxy {
       this._d.er.remove()
     this._render()
   }
-  _onAllowAllClick(): void {
+  _onAllowAllServicesClick(): void {
     this._trackingGuard.setConsent(true)
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
-  _onDenyAllClick(): void {
+  _onDenyAllServicesClick(): void {
     this._trackingGuard.setConsent(false)
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
@@ -252,12 +255,16 @@ export default class UIProxy {
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
-  _onDenyServicelClick(service: string): void {
+  _onDenyServiceClick(service: string): void {
     this._trackingGuard.setConsent(false, service)
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
-
+  _getServiceStateLabel(srv: TrackingServiceLayer): string {
+    if (!srv.consent.reviewed) return 'Pending'
+    if (srv.consent.value) return 'Allowed'
+    return 'Denied'
+  }
   mount(): void {
     this._render()
     let settings: Element
@@ -268,12 +275,7 @@ export default class UIProxy {
     if (this._settingsDisplayed) this._d.r.append(this._d.sr)
     document.body.append(this._d.r)
   }
-  _getServiceStateLabel(srv: TrackingServiceLayer): string {
-    if (!srv.consent.reviewed) return 'Pending'
-    if (srv.consent.value) return 'Allowed'
-    return 'Denied'
-  }
-  initSettingsService(services: TrackingServiceLayer[]): void {
+  initSettingsServices(services: TrackingServiceLayer[]): void {
     this._services = services
     for (const service of services) {
       const elSrv = createElmt('div', ['ot-settings__service'], {
@@ -281,40 +283,54 @@ export default class UIProxy {
       })
       const elSrvHeader = createElmt('div', ['ot-settings__service-header'])
       const elSrvName = createElmt('p', ['ot-settings__service-name'])
-      const elSrvType = createElmt('p', ['ot-settings__service-type'])
-      elSrvName.innerHTML = service.tsw.label
-      elSrvType.innerHTML = 'Tracking Measurement'
-      elSrvHeader.append(elSrvName)
-      elSrvHeader.append(elSrvType)
       const elSrvContent = createElmt('div', ['ot-settings__service-content'])
       const elSrvInfo = createElmt('div', ['ot-settings__service-info'])
-      const elSrvState = createElmt('div', ['ot-settings__service-state'], {
+      let elSrvType: Element
+      if (service.type) {
+        elSrvType = createElmt('p', ['ot-settings__service-type'])
+        elSrvType.innerHTML = service.type
+      }
+      elSrvName.innerHTML = service.tsw.label
+      elSrvHeader.append(elSrvName)
+      if (elSrvType) elSrvHeader.append(elSrvType)
+      let elSrvDesc: Element
+      if (service.description) {
+        elSrvDesc = createElmt('div', ['ot-settings__service-desc'])
+        elSrvDesc.innerHTML = service.description
+      }
+      let elSrvState: Element
+      if (service.isEditable)
+      elSrvState = createElmt('div', ['ot-settings__service-state'], {
         'data-ot-srv-state': '',
       })
-      elSrvInfo.append(elSrvState)
-      const elSrvBtns = createElmt('div', ['ot-settings__service-btns'])
-      const btns = [
-        {
-          t: 'Deny',
-          c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
-          a: { 'data-ot-settings-srv-ua': 'deny' },
-          h: this._onDenyServicelClick.bind(this),
-        },
-        {
-          t: 'Allow',
-          c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
-          a: { 'data-ot-settings-srv-ua': 'allow' },
-          h: this._onAllowServiceClick.bind(this),
-        },
-      ]
-      for (const btn of btns) {
-        const elServiceBtn = createElmt('button', btn.c, btn.a)
-        elServiceBtn.innerHTML = btn.t
-        elServiceBtn.addEventListener('click', (e) => btn.h(service.name, e))
-        elSrvBtns.append(elServiceBtn)
+      if (elSrvDesc) elSrvInfo.append(elSrvDesc)
+      if (elSrvState) elSrvInfo.append(elSrvState)
+      let elSrvBtns: Element
+      if (service.isEditable) {
+        elSrvBtns = createElmt('div', ['ot-settings__service-btns'])
+        const btns = [
+          {
+            t: 'Deny',
+            c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
+            a: { 'data-ot-settings-srv-ua': 'deny' },
+            h: this._onDenyServiceClick.bind(this),
+          },
+          {
+            t: 'Allow',
+            c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
+            a: { 'data-ot-settings-srv-ua': 'allow' },
+            h: this._onAllowServiceClick.bind(this),
+          },
+        ]
+        for (const btn of btns) {
+          const elServiceBtn = createElmt('button', btn.c, btn.a)
+          elServiceBtn.innerHTML = btn.t
+          elServiceBtn.addEventListener('click', (e) => btn.h(service.name, e))
+          elSrvBtns.append(elServiceBtn)
+        }
       }
       elSrvContent.append(elSrvInfo)
-      elSrvContent.append(elSrvBtns)
+      if (elSrvBtns) elSrvContent.append(elSrvBtns)
       elSrv.append(elSrvHeader)
       elSrv.append(elSrvContent)
       this._d.srvr.append(elSrv)
