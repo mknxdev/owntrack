@@ -179,16 +179,43 @@
         svg.append(l2);
         return svg;
     };
-    const createElmt = (tag, classes = []) => {
+    const createElmt = (tag, classes = [], attrs = {}) => {
         const element = document.createElement(tag);
         for (const c of classes)
             element.classList.add(c);
+        for (const [attr, val] of Object.entries(attrs))
+            element.setAttribute(attr, val);
         return element;
     };
     const generateIconElement = (icon) => {
         return {
             close: getIconCloseElement(),
         }[icon];
+    };
+
+    const findElementChildByAttr = (el, attr, attrVal = '') => {
+        let found = null;
+        for (let i = 0; i < el.children.length; i++) {
+            const child = el.children[i];
+            const hasAttr = child.hasAttribute(attr);
+            const childAttrVal = child.getAttribute(attr);
+            if (hasAttr && (!attrVal || (attrVal && childAttrVal === attrVal)))
+                found = child;
+            else if (!found)
+                found = findElementChildByAttr(child, attr, attrVal);
+        }
+        return found;
+    };
+    const findElementChildByClass = (el, _class) => {
+        let found = null;
+        for (let i = 0; i < el.children.length; i++) {
+            const child = el.children[i];
+            if (child.classList.contains(_class))
+                found = child;
+            else if (!found)
+                found = findElementChildByClass(child, _class);
+        }
+        return found;
     };
 
     class UIManager {
@@ -302,10 +329,22 @@
             this._d.srvr.classList.add('ot-settings__services');
         }
         _render() {
-            const { children: services } = this._d.srvr;
-            for (let i = 0; i < services.length; i++) {
-                const service = services[i];
-                console.log(service, this._services);
+            for (const srv of this._services) {
+                const elSrv = findElementChildByAttr(this._d.srvr, 'data-ot-srv', srv.name);
+                if (elSrv) {
+                    const elState = findElementChildByAttr(elSrv, 'data-ot-srv-state');
+                    elState.innerHTML = this._getServiceStateLabel(srv);
+                    if (srv.consent.reviewed) {
+                        const elBtnDeny = findElementChildByClass(elSrv, 'ota-deny');
+                        const elBtnAllow = findElementChildByClass(elSrv, 'ota-allow');
+                        elBtnDeny.classList.remove('ot-active');
+                        elBtnAllow.classList.remove('ot-active');
+                        if (!srv.consent.value)
+                            elBtnDeny.classList.add('ot-active');
+                        else
+                            elBtnAllow.classList.add('ot-active');
+                    }
+                }
             }
         }
         _onOpenSettingsClick() {
@@ -343,6 +382,7 @@
             this._render();
         }
         mount() {
+            this._render();
             let settings;
             for (let i = 0; i < this._d.sr.children.length; i++)
                 if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
@@ -352,6 +392,7 @@
             document.body.append(this._d.r);
         }
         _getServiceStateLabel(srv) {
+            console.log(srv);
             if (!srv.consent.reviewed)
                 return 'Pending';
             if (srv.consent.value)
@@ -361,7 +402,9 @@
         initSettingsService(services) {
             this._services = services;
             for (const service of services) {
-                const elSrv = createElmt('div', ['ot-settings__service', service.name]);
+                const elSrv = createElmt('div', ['ot-settings__service'], {
+                    'data-ot-srv': service.name,
+                });
                 const elSrvHeader = createElmt('div', ['ot-settings__service-header']);
                 const elSrvName = createElmt('p', ['ot-settings__service-name']);
                 const elSrvType = createElmt('p', ['ot-settings__service-type']);
@@ -371,8 +414,9 @@
                 elSrvHeader.append(elSrvType);
                 const elSrvContent = createElmt('div', ['ot-settings__service-content']);
                 const elSrvInfo = createElmt('div', ['ot-settings__service-info']);
-                const elSrvState = createElmt('div', ['ot-settings__service-state']);
-                elSrvState.innerHTML = this._getServiceStateLabel(service);
+                const elSrvState = createElmt('div', ['ot-settings__service-state'], {
+                    'data-ot-srv-state': '',
+                });
                 elSrvInfo.append(elSrvState);
                 const elSrvBtns = createElmt('div', ['ot-settings__service-btns']);
                 const btns = [

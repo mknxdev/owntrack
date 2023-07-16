@@ -10,12 +10,13 @@ export type ConfigService = {
 export type Config = {
   services: ConfigService[]
 }
+export type Consent = {
+  value: boolean
+  reviewed: boolean
+}
 export type TrackingService = {
   name: string
-  consent: {
-    value: boolean
-    reviewed: boolean
-  }
+  consent: Consent
   sw: ServiceWrapper
 }
 export type TrackingServiceConsent = {

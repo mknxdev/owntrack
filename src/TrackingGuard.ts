@@ -77,13 +77,13 @@ export default class TrackingGuard {
       }),
     )
   }
-  isReviewed(service: string = ''): boolean {
+  isReviewed(service = ''): boolean {
     if (!service) return this._consents.every((consent) => consent.r)
     return !!this._consents.filter(
       (consent) => consent.srv === service && consent.r,
     ).length
   }
-  hasConsent(service: string = ''): boolean {
+  hasConsent(service = ''): boolean {
     if (!service) return this._consents.every((consent) => consent.v)
     return !!this._consents.filter(
       (consent) => consent.srv === service && consent.v,

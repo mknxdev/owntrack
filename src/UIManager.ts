@@ -1,5 +1,6 @@
-import { TrackingService } from './types'
+import { Consent, TrackingService } from './types'
 import { createElmt, generateIconElement } from './helpers/ui'
+import { findElementChildByAttr, findElementChildByClass } from './helpers/dom'
 import TrackingGuard from './TrackingGuard'
 
 export default class UIManager {
@@ -116,10 +117,24 @@ export default class UIManager {
     this._d.srvr.classList.add('ot-settings__services')
   }
   _render(): void {
-    const { children: services } = this._d.srvr
-    for (let i = 0; i < services.length; i++) {
-      const service: Element = services[i]
-      console.log(service, this._services)
+    for (const srv of this._services) {
+      const elSrv: Element = findElementChildByAttr(
+        this._d.srvr,
+        'data-ot-srv',
+        srv.name,
+      )
+      if (elSrv) {
+        const elState = findElementChildByAttr(elSrv, 'data-ot-srv-state')
+        elState.innerHTML = this._getServiceStateLabel(srv)
+        if (srv.consent.reviewed) {
+          const elBtnDeny = findElementChildByClass(elSrv, 'ota-deny')
+          const elBtnAllow = findElementChildByClass(elSrv, 'ota-allow')
+          elBtnDeny.classList.remove('ot-active')
+          elBtnAllow.classList.remove('ot-active')
+          if (!srv.consent.value) elBtnDeny.classList.add('ot-active')
+          else elBtnAllow.classList.add('ot-active')
+        }
+      }
     }
   }
   _onOpenSettingsClick(): void {
@@ -162,6 +177,7 @@ export default class UIManager {
   }
 
   mount(): void {
+    this._render()
     let settings: Element
     for (let i = 0; i < this._d.sr.children.length; i++)
       if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
@@ -171,6 +187,8 @@ export default class UIManager {
     document.body.append(this._d.r)
   }
   _getServiceStateLabel(srv: TrackingService): string {
+    console.log(srv)
+
     if (!srv.consent.reviewed) return 'Pending'
     if (srv.consent.value) return 'Allowed'
     return 'Denied'
@@ -178,7 +196,9 @@ export default class UIManager {
   initSettingsService(services: TrackingService[]): void {
     this._services = services
     for (const service of services) {
-      const elSrv = createElmt('div', ['ot-settings__service', service.name])
+      const elSrv = createElmt('div', ['ot-settings__service'], {
+        'data-ot-srv': service.name,
+      })
       const elSrvHeader = createElmt('div', ['ot-settings__service-header'])
       const elSrvName = createElmt('p', ['ot-settings__service-name'])
       const elSrvType = createElmt('p', ['ot-settings__service-type'])
@@ -188,8 +208,9 @@ export default class UIManager {
       elSrvHeader.append(elSrvType)
       const elSrvContent = createElmt('div', ['ot-settings__service-content'])
       const elSrvInfo = createElmt('div', ['ot-settings__service-info'])
-      const elSrvState = createElmt('div', ['ot-settings__service-state'])
-      elSrvState.innerHTML = this._getServiceStateLabel(service)
+      const elSrvState = createElmt('div', ['ot-settings__service-state'], {
+        'data-ot-srv-state': '',
+      })
       elSrvInfo.append(elSrvState)
       const elSrvBtns = createElmt('div', ['ot-settings__service-btns'])
       const btns = [
