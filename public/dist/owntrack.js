@@ -259,6 +259,21 @@
         svg.classList.add('ot-icn');
         return svg;
     };
+    const getLogoElement = () => {
+        const svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('version', '1.1');
+        svg.setAttribute('viewBox', '0 0 1282.93 709.16');
+        const p1 = document.createElementNS(NS, 'polygon');
+        const p2 = document.createElementNS(NS, 'polygon');
+        p1.setAttribute('points', '501.45 0 207.71 0 0 207.71 0 501.45 207.71 709.16 501.45 709.16 709.16 501.45 709.16 207.71 501.45 0');
+        p1.setAttribute('fill', '#88181a');
+        p2.setAttribute('points', '1282.93 131.04 1150.56 0 646.02 0 778.38 131.04 915.5 131.04 915.5 709.16 1046.54 576.8 1046.54 131.04 1282.93 131.04');
+        p2.setAttribute('fill', '#6e6e6e');
+        svg.append(p1);
+        svg.append(p2);
+        svg.classList.add('ot-logo');
+        return svg;
+    };
     const createElmt = (tag, classes = [], attrs = {}) => {
         const element = document.createElement(tag);
         for (const c of classes)
@@ -298,26 +313,24 @@
         return found;
     };
 
-    class UIProxy {
+    class DOMProxy {
         constructor(trackingGuard) {
             this._services = [];
             // _d: DOM
             // _d.r: root
             // _d.r: entry root
             // _d.sr: settings root
+            // _d.sc: settings content
             // _d.srvr: services root
             this._d = {
                 r: createElmt('div'),
                 er: createElmt('div'),
                 sr: createElmt('div'),
+                sc: createElmt('div'),
                 srvr: createElmt('div'),
             };
-            this._settingsDisplayed = true;
+            this._settingsDisplayed = false;
             this._trackingGuard = trackingGuard;
-            this._initBase();
-            this._initEntry();
-            this._initSettings();
-            this._initServices();
         }
         _initBase() {
             this._d.r = document.createElement('div');
@@ -326,9 +339,14 @@
         _initEntry() {
             this._d.er = createElmt('div', ['ot-entry-wrapper']);
             const elEntry = createElmt('div', ['ot-entry']);
+            // const elEntryCP = createElmt('div', ['ot-entry__cp'])
+            // const elEntryCPLogo = createElmt('div', ['ot-entry__cp-logo'])
+            // elEntryCPLogo.append(getLogoElement())
             const elEntryNotice = createElmt('div', ['ot-entry__notice']);
             elEntryNotice.innerHTML =
                 '<p>This website uses cookies &amp; analytics for tracking and/or advertising purposes. You can choose to accept them or not.</p>';
+            // elEntryCP.append(elEntryCPLogo)
+            // elEntry.append(elEntryCP)
             elEntry.append(elEntryNotice);
             const btns = [
                 {
@@ -374,9 +392,11 @@
             this._d.er.append(elEntry);
             this._d.r.append(this._d.er);
         }
-        _initSettings() {
+        _initSettingsBase() {
             this._d.sr.classList.add('ot-settings-overlay');
-            const elSettings = createElmt('div', ['ot-settings']);
+            this._d.sc.classList.add('ot-settings');
+        }
+        _initSettingsHeader() {
             // "close" btn
             const elCloseBtn = createElmt('div', [
                 'ot-settings__close',
@@ -388,13 +408,6 @@
             elCloseBtn.addEventListener('click', this._onSettingsCloseClick.bind(this));
             const elClose = generateIconElement('close');
             elCloseBtn.append(elClose);
-            elSettings.append(elCloseBtn);
-            this._d.sr.append(elSettings);
-            // content
-            let content;
-            for (let i = 0; i < this._d.sr.children.length; i++)
-                if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
-                    content = this._d.sr.children.item(Number(i));
             const elHeadline = createElmt('h1');
             elHeadline.innerHTML = 'Tracking Settings';
             const elNotice = createElmt('p', ['ot-settings__notice']);
@@ -425,12 +438,86 @@
                 elGActionsBtns.append(elEntryBtn);
             }
             elGActions.append(elGActionsBtns);
-            content.append(elHeadline);
-            content.append(elNotice);
-            content.append(elGActions);
+            this._d.sc.append(elCloseBtn);
+            this._d.sc.append(elHeadline);
+            this._d.sc.append(elNotice);
+            this._d.sc.append(elGActions);
         }
-        _initServices() {
+        _initSettingsServices() {
             this._d.srvr.classList.add('ot-settings__services');
+            for (const service of this._services) {
+                const elSrv = createElmt('div', ['ot-settings__service'], {
+                    'data-ot-srv': service.name,
+                });
+                const elSrvHeader = createElmt('div', ['ot-settings__service-header']);
+                const elSrvName = createElmt('p', ['ot-settings__service-name']);
+                const elSrvContent = createElmt('div', ['ot-settings__service-content']);
+                const elSrvInfo = createElmt('div', ['ot-settings__service-info']);
+                let elSrvType;
+                if (service.type) {
+                    elSrvType = createElmt('p', ['ot-settings__service-type']);
+                    elSrvType.innerHTML = service.type;
+                }
+                elSrvName.innerHTML = service.tsw.label;
+                elSrvHeader.append(elSrvName);
+                if (elSrvType)
+                    elSrvHeader.append(elSrvType);
+                let elSrvDesc;
+                if (service.description) {
+                    elSrvDesc = createElmt('div', ['ot-settings__service-desc']);
+                    elSrvDesc.innerHTML = service.description;
+                }
+                let elSrvState;
+                if (service.isEditable)
+                    elSrvState = createElmt('div', ['ot-settings__service-state'], {
+                        'data-ot-srv-state': '',
+                    });
+                if (elSrvDesc)
+                    elSrvInfo.append(elSrvDesc);
+                if (elSrvState)
+                    elSrvInfo.append(elSrvState);
+                let elSrvBtns;
+                if (service.isEditable) {
+                    elSrvBtns = createElmt('div', ['ot-settings__service-btns']);
+                    const btns = [
+                        {
+                            t: 'Deny',
+                            c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
+                            a: { 'data-ot-settings-srv-ua': 'deny' },
+                            h: this._onDenyServiceClick.bind(this),
+                        },
+                        {
+                            t: 'Allow',
+                            c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
+                            a: { 'data-ot-settings-srv-ua': 'allow' },
+                            h: this._onAllowServiceClick.bind(this),
+                        },
+                    ];
+                    for (const btn of btns) {
+                        const elServiceBtn = createElmt('button', btn.c, btn.a);
+                        elServiceBtn.innerHTML = btn.t;
+                        elServiceBtn.addEventListener('click', (e) => btn.h(service.name, e));
+                        elSrvBtns.append(elServiceBtn);
+                    }
+                }
+                elSrvContent.append(elSrvInfo);
+                if (elSrvBtns)
+                    elSrvContent.append(elSrvBtns);
+                elSrv.append(elSrvHeader);
+                elSrv.append(elSrvContent);
+                this._d.srvr.append(elSrv);
+            }
+            this._d.sc.append(this._d.srvr);
+        }
+        _initSettingsFooter() {
+            const elEntryCP = createElmt('div', ['ot-settings__cp']);
+            const elEntryCPInfo = createElmt('div', ['ot-settings__cp-info']);
+            elEntryCPInfo.innerHTML = 'Powered by OwnTrack';
+            const elEntryCPLogo = createElmt('div', ['ot-settings__cp-logo']);
+            elEntryCPLogo.append(getLogoElement());
+            elEntryCP.append(elEntryCPInfo);
+            elEntryCP.append(elEntryCPLogo);
+            this._d.sc.append(elEntryCP);
         }
         _render() {
             // entry + settings
@@ -538,79 +625,22 @@
         }
         mount() {
             this._render();
-            let settings;
-            for (let i = 0; i < this._d.sr.children.length; i++)
-                if (this._d.sr.children.item(Number(i)).classList.contains('ot-settings'))
-                    settings = this._d.sr.children.item(Number(i));
-            settings.append(this._d.srvr);
-            if (this._settingsDisplayed)
+            this._d.sr.append(this._d.sc);
+            if (this._settingsDisplayed) {
                 this._d.r.append(this._d.sr);
+            }
             document.body.append(this._d.r);
         }
-        initSettingsServices(services) {
+        setServices(services) {
             this._services = services;
-            for (const service of services) {
-                const elSrv = createElmt('div', ['ot-settings__service'], {
-                    'data-ot-srv': service.name,
-                });
-                const elSrvHeader = createElmt('div', ['ot-settings__service-header']);
-                const elSrvName = createElmt('p', ['ot-settings__service-name']);
-                const elSrvContent = createElmt('div', ['ot-settings__service-content']);
-                const elSrvInfo = createElmt('div', ['ot-settings__service-info']);
-                let elSrvType;
-                if (service.type) {
-                    elSrvType = createElmt('p', ['ot-settings__service-type']);
-                    elSrvType.innerHTML = service.type;
-                }
-                elSrvName.innerHTML = service.tsw.label;
-                elSrvHeader.append(elSrvName);
-                if (elSrvType)
-                    elSrvHeader.append(elSrvType);
-                let elSrvDesc;
-                if (service.description) {
-                    elSrvDesc = createElmt('div', ['ot-settings__service-desc']);
-                    elSrvDesc.innerHTML = service.description;
-                }
-                let elSrvState;
-                if (service.isEditable)
-                    elSrvState = createElmt('div', ['ot-settings__service-state'], {
-                        'data-ot-srv-state': '',
-                    });
-                if (elSrvDesc)
-                    elSrvInfo.append(elSrvDesc);
-                if (elSrvState)
-                    elSrvInfo.append(elSrvState);
-                let elSrvBtns;
-                if (service.isEditable) {
-                    elSrvBtns = createElmt('div', ['ot-settings__service-btns']);
-                    const btns = [
-                        {
-                            t: 'Deny',
-                            c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
-                            a: { 'data-ot-settings-srv-ua': 'deny' },
-                            h: this._onDenyServiceClick.bind(this),
-                        },
-                        {
-                            t: 'Allow',
-                            c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
-                            a: { 'data-ot-settings-srv-ua': 'allow' },
-                            h: this._onAllowServiceClick.bind(this),
-                        },
-                    ];
-                    for (const btn of btns) {
-                        const elServiceBtn = createElmt('button', btn.c, btn.a);
-                        elServiceBtn.innerHTML = btn.t;
-                        elServiceBtn.addEventListener('click', (e) => btn.h(service.name, e));
-                        elSrvBtns.append(elServiceBtn);
-                    }
-                }
-                elSrvContent.append(elSrvInfo);
-                if (elSrvBtns)
-                    elSrvContent.append(elSrvBtns);
-                elSrv.append(elSrvHeader);
-                elSrv.append(elSrvContent);
-                this._d.srvr.append(elSrv);
-            }
+        }
+        init() {
+            this._initBase();
+            this._initEntry();
+            this._initSettingsBase();
+            this._initSettingsHeader();
+            this._initSettingsServices();
+            this._initSettingsFooter();
         }
     }
 
@@ -618,17 +648,18 @@
         constructor(config) {
             this._trackingGuard = new TrackingGuard();
             this._services = [];
-            this._ui = new UIProxy(this._trackingGuard);
+            this._dp = new DOMProxy(this._trackingGuard);
             for (const service of config.services)
                 this._services.push(this._trackingGuard.wrapService(service));
             this._trackingGuard.store();
             this._trackingGuard.init();
-            this._ui.initSettingsServices([
+            this._dp.setServices([
                 this._trackingGuard.getRCService(),
                 ...this._services
             ]);
+            this._dp.init();
             window.addEventListener('DOMContentLoaded', () => {
-                this._ui.mount();
+                this._dp.mount();
             });
         }
         service(name) {
