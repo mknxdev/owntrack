@@ -113,7 +113,6 @@
             this._consents = ls.getItem(LS_ITEM_NAME) || [];
         }
         wrapService({ name, label, type, description, trackingScriptUrl, onInit, handlers, }) {
-            // console.log(name, label, trackingScriptUrl, handlers)
             const srv = new TrackingServiceWrapper(name, label, onInit);
             for (const [fnName, fn] of Object.entries(handlers))
                 srv[fnName] = this._setFnGuard(name, fn);

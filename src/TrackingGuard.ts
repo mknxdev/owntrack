@@ -39,7 +39,6 @@ export default class TrackingGuard {
     onInit,
     handlers,
   }: ConfigService): TrackingServiceLayer {
-    // console.log(name, label, trackingScriptUrl, handlers)
     const srv = new TrackingServiceWrapper(name, label, onInit)
     for (const [fnName, fn] of Object.entries(handlers))
       srv[fnName] = this._setFnGuard(name, fn)
