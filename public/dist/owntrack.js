@@ -85,11 +85,10 @@
         removeItem,
     };
 
-    class TrackingServiceWrapper {
-        constructor(name, label, onInit) {
+    class TrackingService {
+        constructor(name, label) {
             this.name = name;
             this._l = label;
-            this._onInit = onInit;
         }
         get label() {
             return this._l || this.name;
@@ -101,21 +100,24 @@
         constructor() {
             this._services = [];
             this._consents = [];
-            this._actionsQueue = [];
+            this._initTaskQueue = [];
+            this._tasksQueue = [];
             // rc: required cookies
             this._rcService = {
                 isEditable: false,
                 name: '_rc',
                 description: 'This website uses some cookies needed for it to work. They cannot be disabled.',
                 consent: { value: true, reviewed: true },
-                tsw: new TrackingServiceWrapper('_rc', 'Required cookies', () => { })
+                tsw: new TrackingService('_rc', 'Required cookies')
             };
             this._consents = ls.getItem(LS_ITEM_NAME) || [];
         }
         wrapService({ name, label, type, description, trackingScriptUrl, onInit, handlers, }) {
-            const srv = new TrackingServiceWrapper(name, label, onInit);
-            for (const [fnName, fn] of Object.entries(handlers))
-                srv[fnName] = this._setFnGuard(name, fn);
+            this._initTaskQueue.push({ srv: name, handler: onInit, processed: false });
+            const srv = new TrackingService(name, label);
+            for (const [fnName, fn] of Object.entries(handlers)) {
+                srv[fnName] = this._getWrappedTrackingFn(name, /* fnName, */ fn);
+            }
             this._services.push(srv);
             return {
                 isEditable: true,
@@ -126,20 +128,32 @@
                 tsw: srv,
             };
         }
-        _setFnGuard(srv, handler) {
+        _getWrappedTrackingFn(srv, /* handlerName: string, */ handler) {
             return () => {
                 if (this.hasConsent(srv))
                     return handler();
                 else if (!this.isReviewed(srv))
-                    this._actionsQueue.push({ srv, handler, processed: false });
+                    this._tasksQueue.push({
+                        srv,
+                        handler,
+                    });
             };
         }
-        _processActionsQueue() {
-            this._actionsQueue = this._actionsQueue.filter(action => {
-                if (!this.isReviewed(action.srv))
+        _execInitTaskQueue() {
+            this._initTaskQueue = this._initTaskQueue.filter(task => {
+                if (this.hasConsent(task.srv) && !task.processed) {
+                    task.handler();
+                    task.processed = true;
+                }
+                return task;
+            });
+        }
+        _execTasksQueue() {
+            this._tasksQueue = this._tasksQueue.filter(task => {
+                if (!this.isReviewed(task.srv))
                     return true;
-                if (this.hasConsent(action.srv))
-                    action.handler();
+                if (this.hasConsent(task.srv))
+                    task.handler();
                 return false;
             });
         }
@@ -156,6 +170,9 @@
             this._consents = consents;
             ls.setItem(LS_ITEM_NAME, consents);
         }
+        init() {
+            this._execInitTaskQueue();
+        }
         setConsent(value, service = '') {
             if (!service)
                 for (const consent of this._consents) {
@@ -171,7 +188,8 @@
                     return consent;
                 });
             this.store();
-            this._processActionsQueue();
+            this._execInitTaskQueue();
+            this._execTasksQueue();
         }
         setUnreviewedConsents(value) {
             this._consents = this._consents.map((consent) => {
@@ -181,7 +199,8 @@
                 return consent;
             });
             this.store();
-            this._processActionsQueue();
+            this._execInitTaskQueue();
+            this._execTasksQueue();
         }
         getRCService() {
             return this._rcService;
@@ -603,14 +622,14 @@
             for (const service of config.services)
                 this._services.push(this._trackingGuard.wrapService(service));
             this._trackingGuard.store();
+            this._trackingGuard.init();
             this._ui.initSettingsServices([
                 this._trackingGuard.getRCService(),
                 ...this._services
             ]);
-            window.addEventListener('DOMContentLoaded', this._onReady.bind(this));
-        }
-        _onReady() {
-            this._ui.mount();
+            window.addEventListener('DOMContentLoaded', () => {
+                this._ui.mount();
+            });
         }
         service(name) {
             if (checkForValidServiceName(name, this._services.map(s => s.name)))

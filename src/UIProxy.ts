@@ -1,4 +1,4 @@
-import { TrackingServiceLayer } from './types'
+import { TrackingServiceContainer } from './types'
 import { createElmt, generateIconElement } from './helpers/ui'
 import {
   findElementChildByAttr as findChildByAttr,
@@ -8,7 +8,7 @@ import TrackingGuard from './TrackingGuard'
 
 export default class UIProxy {
   _trackingGuard: TrackingGuard
-  _services: TrackingServiceLayer[] = []
+  _services: TrackingServiceContainer[] = []
   // _d: DOM
   // _d.r: root
   // _d.r: entry root
@@ -260,7 +260,7 @@ export default class UIProxy {
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
-  _getServiceStateLabel(srv: TrackingServiceLayer): string {
+  _getServiceStateLabel(srv: TrackingServiceContainer): string {
     if (!srv.consent.reviewed) return 'Pending'
     if (srv.consent.value) return 'Allowed'
     return 'Denied'
@@ -275,7 +275,7 @@ export default class UIProxy {
     if (this._settingsDisplayed) this._d.r.append(this._d.sr)
     document.body.append(this._d.r)
   }
-  initSettingsServices(services: TrackingServiceLayer[]): void {
+  initSettingsServices(services: TrackingServiceContainer[]): void {
     this._services = services
     for (const service of services) {
       const elSrv = createElmt('div', ['ot-settings__service'], {
