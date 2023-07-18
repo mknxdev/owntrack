@@ -400,8 +400,13 @@
             this._d.r.classList.add('ot-root');
         }
         _initTrigger() {
-            this._d.tr.classList.add('ot-trigger');
-            this._d.tr.innerHTML = 'OT';
+            const elTriggerContainer = createElmt('div', ['ot-trigger']);
+            const elTriggerInfo = createElmt('p', ['ot-trigger__info']);
+            elTriggerInfo.innerHTML = 'Tracking<br />Protection';
+            elTriggerContainer.append(getLogoElement());
+            elTriggerContainer.append(elTriggerInfo);
+            this._d.tr.classList.add('ot-trigger-container');
+            this._d.tr.append(elTriggerContainer);
             this._d.tr.addEventListener('click', this._onMainTriggerClick.bind(this));
         }
         _initEntry() {
@@ -655,7 +660,7 @@
         _onMainCloseClick() {
             this._trackingGuard.setUnreviewedConsents(false);
             this._services = this._trackingGuard.getTrackingServices();
-            this.setTriggerState(true);
+            this._triggerDisplayed = true;
             this._entryDisplayed = false;
             this._settingsDisplayed = false;
             this._manualOpen = false;
@@ -667,21 +672,22 @@
         }
         _onSettingsCloseClick() {
             this._settingsDisplayed = false;
-            this._triggerDisplayed = this._trackingGuard.isReviewed();
-            if (!this._manualOpen)
+            if (!this._manualOpen) {
+                this._triggerDisplayed = this._trackingGuard.isReviewed();
                 this._entryDisplayed = !this._trackingGuard.isReviewed();
+            }
             this._render();
         }
         _onEAllowAllServicesClick() {
             this._trackingGuard.setConsent(true);
-            this.setTriggerState(true);
+            this._triggerDisplayed = true;
             this._entryDisplayed = false;
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
         }
         _onEDenyAllServicesClick() {
             this._trackingGuard.setConsent(false);
-            this.setTriggerState(true);
+            this._triggerDisplayed = true;
             this._entryDisplayed = false;
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
@@ -712,12 +718,6 @@
             if (srv.consent.value)
                 return 'Allowed';
             return 'Denied';
-        }
-        setTriggerState(value) {
-            this._triggerDisplayed = value;
-        }
-        setEntryState(value) {
-            this._entryDisplayed = value;
         }
         mount() {
             this._render();

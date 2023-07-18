@@ -2,7 +2,6 @@ import { TrackingServiceContainer } from './types'
 import { createElmt, generateIconElement, getLogoElement } from './helpers/ui'
 import {
   findElementChildByAttr as findChildByAttr,
-  findElementChildByClass,
 } from './helpers/dom'
 import TrackingGuard from './TrackingGuard'
 
@@ -30,8 +29,13 @@ export default class DOMProxy {
     this._d.r.classList.add('ot-root')
   }
   _initTrigger(): void {
-    this._d.tr.classList.add('ot-trigger')
-    this._d.tr.innerHTML = 'OT'
+    const elTriggerContainer = createElmt('div', ['ot-trigger'])
+    const elTriggerInfo = createElmt('p', ['ot-trigger__info'])
+    elTriggerInfo.innerHTML = 'Tracking<br />Protection'
+    elTriggerContainer.append(getLogoElement())
+    elTriggerContainer.append(elTriggerInfo)
+    this._d.tr.classList.add('ot-trigger-container')
+    this._d.tr.append(elTriggerContainer)
     this._d.tr.addEventListener('click', this._onMainTriggerClick.bind(this))
   }
   _initEntry(): void {
@@ -301,7 +305,7 @@ export default class DOMProxy {
   _onMainCloseClick(): void {
     this._trackingGuard.setUnreviewedConsents(false)
     this._services = this._trackingGuard.getTrackingServices()
-    this.setTriggerState(true)
+    this._triggerDisplayed = true
     this._entryDisplayed = false
     this._settingsDisplayed = false
     this._manualOpen = false
@@ -313,21 +317,22 @@ export default class DOMProxy {
   }
   _onSettingsCloseClick(): void {
     this._settingsDisplayed = false
-    this._triggerDisplayed = this._trackingGuard.isReviewed()
-    if (!this._manualOpen)
+    if (!this._manualOpen) {
+      this._triggerDisplayed = this._trackingGuard.isReviewed()
       this._entryDisplayed = !this._trackingGuard.isReviewed()
+    }
     this._render()
   }
   _onEAllowAllServicesClick(): void {
     this._trackingGuard.setConsent(true)
-    this.setTriggerState(true)
+    this._triggerDisplayed = true
     this._entryDisplayed = false
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
   _onEDenyAllServicesClick(): void {
     this._trackingGuard.setConsent(false)
-    this.setTriggerState(true)
+    this._triggerDisplayed = true
     this._entryDisplayed = false
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
@@ -356,12 +361,6 @@ export default class DOMProxy {
     if (!srv.consent.reviewed) return 'Pending'
     if (srv.consent.value) return 'Allowed'
     return 'Denied'
-  }
-  setTriggerState(value: boolean): void {
-    this._triggerDisplayed = value
-  }
-  setEntryState(value: boolean): void {
-    this._entryDisplayed = value
   }
   mount(): void {
     this._render()

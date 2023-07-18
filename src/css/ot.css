@@ -82,6 +82,29 @@
   }
 }
 
+/* OT: Trigger */
+
+.ot-root .ot-trigger-container {
+  position: fixed;
+  bottom: 12px;
+  left: 0;
+  padding: 6px 4px;
+  border: 1px solid #ddd;
+  border-radius: 0 6px 6px 0;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0 1px 5px #d1d1d1;
+  text-align: center;
+  cursor: pointer;
+}
+.ot-root .ot-trigger svg {
+  width: 30px;
+  margin-bottom: 4px;
+}
+.ot-root .ot-trigger p {
+  margin: 0;
+  font-size: 10px;
+}
+
 /* OT: Entry */
 
 .ot-root .ot-entry-wrapper {
