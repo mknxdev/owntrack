@@ -24,39 +24,16 @@
               // gtag('config', 'G-JSRE6N82F5')
             },
             handlers: {
-              setDimensions: () => {
-                console.log('[ga] setDimensions')
-              },
-            },
-          },
-          {
-            name: 'ga2',
-            label: 'Google Analytics V4',
-            type: 'Analytics',
-            description: 'The Google all-in-one analytics tool.',
-            scriptUrl:
-              'https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5',
-            onInit: () => {
-              // console.log('user: init')
-              // window.dataLayer = window.dataLayer || []
-              // function gtag() {
-              //   dataLayer.push(arguments)
-              // }
-              // gtag('js', new Date())
-              // gtag('config', 'G-JSRE6N82F5')
-            },
-            handlers: {
-              setDimensions: () => {
-                console.log('[ga2] setDimensions')
+              setDimensions: (arg1, arg2) => {
+                console.log('coucou', arg1, arg2)
               },
             },
           },
         ],
       })
-      ot.service('ga').setDimensions()
-      ot.service('ga2').setDimensions('test')
       ot.service('ga').setDimensions('test', true)
-      console.log(ot._trackingGuard)
+      // ot.service('ga2').setDimensions('test', true)
+      // console.log(ot._trackingGuard)
       // console.log(window.dataLayer)
     </script>
     <link rel="stylesheet" href="./dist/owntrack.css" />

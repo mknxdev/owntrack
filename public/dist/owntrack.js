@@ -214,16 +214,14 @@
             };
         }
         _getWrappedTrackingFn(srv, handler) {
-            return () => {
-                console.log(this);
-                console.log('invoking user-wrapped function...');
-                // if (this.isReviewed(srv) && this.hasConsent(srv)) handler()
-                // else if (!this.isReviewed(srv))
-                //   this._tasksQueue.push({
-                //     srv,
-                //     handler,
-                //     processed: false,
-                //   })
+            return (...args) => {
+                this._tasksQueue.push({
+                    srv,
+                    handler,
+                    args,
+                    processed: false,
+                });
+                this._execTaskQueue();
             };
         }
         _execScriptTaskQueue() {
@@ -239,6 +237,7 @@
                         console.log(`[${task.srv}] script task done`);
                         this._execScriptTaskQueue();
                         this._execInitTaskQueue();
+                        this._execTaskQueue();
                     });
                     document.head.append(elScript);
                     task.attachedHandler = true;
@@ -250,32 +249,32 @@
         _execInitTaskQueue() {
             this._initTaskQueue = this._initTaskQueue
                 .map((task) => {
-                const scriptDep = this._scriptQueue.filter((s) => s.srv === task.srv);
-                const isScriptLoaded = scriptDep.length ? scriptDep[0].processed : true;
+                const hasScriptDep = this._scriptQueue.filter((s) => s.srv === task.srv);
+                const isScriptLoaded = hasScriptDep.length ? hasScriptDep[0].processed : true;
                 if (isScriptLoaded &&
                     this.isReviewed(task.srv) &&
                     this.hasConsent(task.srv)) {
                     task.handler();
                     task.processed = true;
                     console.log(`[${task.srv}] init task done`);
-                    this._execTasksQueue();
+                    this._execTaskQueue();
                 }
                 return task;
             })
                 .filter((task) => !task.processed);
         }
-        _execTasksQueue() {
+        _execTaskQueue() {
             this._tasksQueue = this._tasksQueue
                 .map((task) => {
-                const scriptDep = this._scriptQueue.filter((s) => s.srv === task.srv);
-                const isScriptLoaded = scriptDep.length ? scriptDep[0].processed : true;
-                const initDep = this._initTaskQueue.filter((s) => s.srv === task.srv);
-                const isInitDone = initDep.length ? initDep[0].processed : true;
+                const hasScriptDep = this._scriptQueue.filter((s) => s.srv === task.srv);
+                const isScriptLoaded = hasScriptDep.length ? hasScriptDep[0].processed : true;
+                const hasInitDep = this._initTaskQueue.filter((s) => s.srv === task.srv);
+                const isInitDone = hasInitDep.length ? hasInitDep[0].processed : true;
                 if (isScriptLoaded &&
                     isInitDone &&
                     this.isReviewed(task.srv) &&
                     this.hasConsent(task.srv)) {
-                    task.handler();
+                    task.handler(...task.args);
                     task.processed = true;
                     console.log(`[${task.srv}] task done`);
                 }
@@ -299,6 +298,7 @@
         init() {
             this._execScriptTaskQueue();
             this._execInitTaskQueue();
+            this._execTaskQueue();
         }
         setConsent(value, service = '') {
             if (!service)
@@ -317,7 +317,7 @@
             this.store();
             this._execScriptTaskQueue();
             this._execInitTaskQueue();
-            this._execTasksQueue();
+            this._execTaskQueue();
         }
         setUnreviewedConsents(value) {
             this._consents = this._consents.map((consent) => {
@@ -329,7 +329,7 @@
             this.store();
             this._execScriptTaskQueue();
             this._execInitTaskQueue();
-            this._execTasksQueue();
+            this._execTaskQueue();
         }
         getRCService() {
             return this._rcService;

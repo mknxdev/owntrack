@@ -21,6 +21,7 @@ type InitTask = {
 type Task = {
   srv: string
   handler: Function
+  args: unknown[]
   processed: boolean
 }
 
@@ -82,16 +83,14 @@ export default class TrackingGuard {
     }
   }
   _getWrappedTrackingFn(srv: string, handler: Function) {
-    return () => {
-      console.log(this)
-      console.log('invoking user-wrapped function...')
-      // if (this.isReviewed(srv) && this.hasConsent(srv)) handler()
-      // else if (!this.isReviewed(srv))
-      //   this._tasksQueue.push({
-      //     srv,
-      //     handler,
-      //     processed: false,
-      //   })
+    return (...args: unknown[]) => {
+      this._tasksQueue.push({
+        srv,
+        handler,
+        args,
+        processed: false,
+      })
+      this._execTaskQueue()
     }
   }
   _execScriptTaskQueue(): void {
@@ -109,6 +108,7 @@ export default class TrackingGuard {
             console.log(`[${task.srv}] script task done`)
             this._execScriptTaskQueue()
             this._execInitTaskQueue()
+            this._execTaskQueue()
           })
           document.head.append(elScript)
           task.attachedHandler = true
@@ -120,8 +120,8 @@ export default class TrackingGuard {
   _execInitTaskQueue(): void {
     this._initTaskQueue = this._initTaskQueue
       .map((task) => {
-        const scriptDep = this._scriptQueue.filter((s) => s.srv === task.srv)
-        const isScriptLoaded = scriptDep.length ? scriptDep[0].processed : true
+        const hasScriptDep = this._scriptQueue.filter((s) => s.srv === task.srv)
+        const isScriptLoaded = hasScriptDep.length ? hasScriptDep[0].processed : true
         if (
           isScriptLoaded &&
           this.isReviewed(task.srv) &&
@@ -130,26 +130,26 @@ export default class TrackingGuard {
           task.handler()
           task.processed = true
           console.log(`[${task.srv}] init task done`)
-          this._execTasksQueue()
+          this._execTaskQueue()
         }
         return task
       })
       .filter((task) => !task.processed)
   }
-  _execTasksQueue(): void {
+  _execTaskQueue(): void {
     this._tasksQueue = this._tasksQueue
       .map((task) => {
-        const scriptDep = this._scriptQueue.filter((s) => s.srv === task.srv)
-        const isScriptLoaded = scriptDep.length ? scriptDep[0].processed : true
-        const initDep = this._initTaskQueue.filter((s) => s.srv === task.srv)
-        const isInitDone = initDep.length ? initDep[0].processed : true
+        const hasScriptDep = this._scriptQueue.filter((s) => s.srv === task.srv)
+        const isScriptLoaded = hasScriptDep.length ? hasScriptDep[0].processed : true
+        const hasInitDep = this._initTaskQueue.filter((s) => s.srv === task.srv)
+        const isInitDone = hasInitDep.length ? hasInitDep[0].processed : true
         if (
           isScriptLoaded &&
           isInitDone &&
           this.isReviewed(task.srv) &&
           this.hasConsent(task.srv)
         ) {
-          task.handler()
+          task.handler(...task.args)
           task.processed = true
           console.log(`[${task.srv}] task done`)
         }
@@ -173,6 +173,7 @@ export default class TrackingGuard {
   init(): void {
     this._execScriptTaskQueue()
     this._execInitTaskQueue()
+    this._execTaskQueue()
   }
   setConsent(value: boolean, service = ''): void {
     if (!service)
@@ -191,7 +192,7 @@ export default class TrackingGuard {
     this.store()
     this._execScriptTaskQueue()
     this._execInitTaskQueue()
-    this._execTasksQueue()
+    this._execTaskQueue()
   }
   setUnreviewedConsents(value: boolean): void {
     this._consents = this._consents.map((consent) => {
@@ -202,7 +203,7 @@ export default class TrackingGuard {
     this.store()
     this._execScriptTaskQueue()
     this._execInitTaskQueue()
-    this._execTasksQueue()
+    this._execTaskQueue()
   }
   getRCService(): TrackingServiceContainer {
     return this._rcService
