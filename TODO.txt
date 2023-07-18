@@ -1,6 +1,6 @@
 >>> P0
 
-- Prevent user from retrieving "special" TSWs through .service() (like "_rc": required cookies)
+- Prevent user from retrieving "special" TSs through .service() (like "_rc": required cookies)
 - Add an option to disable a service in configuration
 - Allow user-defined setting (true/false) of "mandatory cookies" section
 - Integrate a locale system (fr, en) for predefined wordings
