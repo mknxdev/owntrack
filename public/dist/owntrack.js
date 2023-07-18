@@ -98,176 +98,6 @@
         removeItem,
     };
 
-    class TrackingService {
-        constructor(name, label) {
-            this.name = name;
-            this._l = label;
-        }
-        get label() {
-            return this._l || this.name;
-        }
-    }
-
-    const LS_ITEM_NAME = 'owntrack_uc';
-    class TrackingGuard {
-        constructor() {
-            this._services = [];
-            this._consents = [];
-            this._scriptQueues = [];
-            this._initTaskQueue = [];
-            this._tasksQueue = [];
-            // rc: required cookies
-            this._rcService = {
-                isEditable: false,
-                name: '_rc',
-                description: 'This website uses some cookies needed for it to work. They cannot be disabled.',
-                consent: { value: true, reviewed: true },
-                tsw: new TrackingService('_rc', 'Required cookies'),
-            };
-            this._consents = ls.getItem(LS_ITEM_NAME) || [];
-        }
-        wrapService({ name, label, type, description, scriptUrl, onInit, handlers, }) {
-            if (scriptUrl)
-                this._scriptQueues.push({ srv: name, url: scriptUrl, processed: false });
-            if (onInit)
-                this._initTaskQueue.push({ srv: name, handler: onInit, processed: false });
-            const srv = new TrackingService(name, label);
-            if (handlers)
-                for (const [fnName, fn] of Object.entries(handlers)) {
-                    srv[fnName] = this._getWrappedTrackingFn(name, fn);
-                }
-            this._services.push(srv);
-            return {
-                isEditable: true,
-                name,
-                type,
-                description,
-                consent: {
-                    value: this.hasConsent(name),
-                    reviewed: this.isReviewed(name),
-                },
-                tsw: srv,
-            };
-        }
-        _getWrappedTrackingFn(srv, handler) {
-            return () => {
-                if (this.hasConsent(srv))
-                    return handler();
-                else if (!this.isReviewed(srv))
-                    this._tasksQueue.push({
-                        srv,
-                        handler,
-                    });
-            };
-        }
-        _execScriptQueue() {
-            this._scriptQueues = this._scriptQueues
-                .map((task) => {
-                if (this.hasConsent(task.srv)) ;
-                return task;
-            })
-                .filter((task) => !task.processed);
-        }
-        _execInitTaskQueue() {
-            this._initTaskQueue = this._initTaskQueue
-                .map((task) => {
-                if (this.hasConsent(task.srv)) {
-                    task.processed = true;
-                    task.handler();
-                }
-                return task;
-            })
-                .filter((task) => !task.processed);
-        }
-        _execTasksQueue() {
-            this._tasksQueue = this._tasksQueue.filter((task) => {
-                if (!this.isReviewed(task.srv))
-                    return true;
-                if (this.hasConsent(task.srv))
-                    task.handler();
-                return false;
-            });
-        }
-        store() {
-            const consents = this._services.map((srv) => ({
-                srv: srv.name,
-                v: this._consents.some((c) => c.srv === srv.name)
-                    ? this._consents.filter((c) => c.srv === srv.name)[0].v
-                    : false,
-                r: this._consents.some((c) => c.srv === srv.name)
-                    ? this._consents.filter((c) => c.srv === srv.name)[0].r
-                    : false,
-            }));
-            this._consents = consents;
-            ls.setItem(LS_ITEM_NAME, consents);
-        }
-        init() {
-            this._execInitTaskQueue();
-        }
-        setConsent(value, service = '') {
-            if (!service)
-                for (const consent of this._consents) {
-                    consent.v = value;
-                    consent.r = true;
-                }
-            else
-                this._consents = this._consents.map((consent) => {
-                    if (consent.srv === service) {
-                        consent.v = value;
-                        consent.r = true;
-                    }
-                    return consent;
-                });
-            this.store();
-            this._execScriptQueue();
-            this._execInitTaskQueue();
-            this._execTasksQueue();
-        }
-        setUnreviewedConsents(value) {
-            this._consents = this._consents.map((consent) => {
-                if (!consent.r)
-                    consent.v = value;
-                consent.r = true;
-                return consent;
-            });
-            this.store();
-            this._execScriptQueue();
-            this._execInitTaskQueue();
-            this._execTasksQueue();
-        }
-        getRCService() {
-            return this._rcService;
-        }
-        getTrackingServices() {
-            return this._services.map((srv) => ({
-                isEditable: true,
-                name: srv.name,
-                consent: {
-                    value: this._consents.some((c) => c.srv === srv.name)
-                        ? this._consents.filter((c) => c.srv === srv.name)[0].v
-                        : false,
-                    reviewed: this._consents.some((c) => c.srv === srv.name)
-                        ? this._consents.filter((c) => c.srv === srv.name)[0].r
-                        : false,
-                },
-                tsw: srv,
-            }));
-        }
-        isReviewed(service = '') {
-            if (!service)
-                return this._consents.every((consent) => consent.r);
-            return !!this._consents.filter((consent) => consent.srv === service && consent.r).length;
-        }
-        hasConsent(service = '') {
-            if (!service)
-                return this._consents.every((consent) => consent.v);
-            return !!this._consents.filter((consent) => consent.srv === service && consent.v).length;
-        }
-        hasGlobalConsent(value) {
-            return this._consents.every((c) => c.v === value);
-        }
-    }
-
     const NS = 'http://www.w3.org/2000/svg';
     const getIconCloseElement = () => {
         const svg = document.createElementNS(NS, 'svg');
@@ -315,11 +145,224 @@
             element.setAttribute(attr, val);
         return element;
     };
+    const createScriptElmt = (url) => {
+        const element = document.createElement('script');
+        element.setAttribute('type', 'text/javascript');
+        element.setAttribute('src', url);
+        return element;
+    };
     const generateIconElement = (icon) => {
         return {
             close: getIconCloseElement(),
         }[icon];
     };
+
+    class TrackingService {
+        constructor(name, label) {
+            this.name = name;
+            this._l = label;
+        }
+        get label() {
+            return this._l || this.name;
+        }
+    }
+
+    const LS_ITEM_NAME = 'owntrack_uc';
+    class TrackingGuard {
+        constructor() {
+            this._services = [];
+            this._consents = [];
+            this._scriptQueue = [];
+            this._initTaskQueue = [];
+            this._tasksQueue = [];
+            // rc: required cookies
+            this._rcService = {
+                isEditable: false,
+                name: '_rc',
+                description: 'This website uses some cookies needed for it to work. They cannot be disabled.',
+                consent: { value: true, reviewed: true },
+                ts: new TrackingService('_rc', 'Required cookies'),
+            };
+            this._consents = ls.getItem(LS_ITEM_NAME) || [];
+        }
+        wrapService({ name, label, type, description, scriptUrl, onInit, handlers, }) {
+            if (scriptUrl)
+                this._scriptQueue.push({
+                    srv: name,
+                    url: scriptUrl,
+                    processed: false,
+                    attachedHandler: false,
+                });
+            if (onInit)
+                this._initTaskQueue.push({ srv: name, handler: onInit, processed: false });
+            const srv = new TrackingService(name, label);
+            if (handlers)
+                for (const [fnName, fn] of Object.entries(handlers)) {
+                    srv[fnName] = this._getWrappedTrackingFn(name, fn);
+                }
+            this._services.push(srv);
+            return {
+                isEditable: true,
+                name,
+                type,
+                description,
+                consent: {
+                    value: this.hasConsent(name),
+                    reviewed: this.isReviewed(name),
+                },
+                ts: srv,
+            };
+        }
+        _getWrappedTrackingFn(srv, handler) {
+            return () => {
+                console.log(this);
+                console.log('invoking user-wrapped function...');
+                // if (this.isReviewed(srv) && this.hasConsent(srv)) handler()
+                // else if (!this.isReviewed(srv))
+                //   this._tasksQueue.push({
+                //     srv,
+                //     handler,
+                //     processed: false,
+                //   })
+            };
+        }
+        _execScriptTaskQueue() {
+            this._scriptQueue = this._scriptQueue
+                .map((task) => {
+                if (!task.processed &&
+                    !task.attachedHandler &&
+                    this.isReviewed(task.srv) &&
+                    this.hasConsent(task.srv)) {
+                    const elScript = createScriptElmt(task.url);
+                    elScript.addEventListener('load', () => {
+                        task.processed = true;
+                        console.log(`[${task.srv}] script task done`);
+                        this._execScriptTaskQueue();
+                        this._execInitTaskQueue();
+                    });
+                    document.head.append(elScript);
+                    task.attachedHandler = true;
+                }
+                return task;
+            })
+                .filter((task) => !task.processed);
+        }
+        _execInitTaskQueue() {
+            this._initTaskQueue = this._initTaskQueue
+                .map((task) => {
+                const scriptDep = this._scriptQueue.filter((s) => s.srv === task.srv);
+                const isScriptLoaded = scriptDep.length ? scriptDep[0].processed : true;
+                if (isScriptLoaded &&
+                    this.isReviewed(task.srv) &&
+                    this.hasConsent(task.srv)) {
+                    task.handler();
+                    task.processed = true;
+                    console.log(`[${task.srv}] init task done`);
+                    this._execTasksQueue();
+                }
+                return task;
+            })
+                .filter((task) => !task.processed);
+        }
+        _execTasksQueue() {
+            this._tasksQueue = this._tasksQueue
+                .map((task) => {
+                const scriptDep = this._scriptQueue.filter((s) => s.srv === task.srv);
+                const isScriptLoaded = scriptDep.length ? scriptDep[0].processed : true;
+                const initDep = this._initTaskQueue.filter((s) => s.srv === task.srv);
+                const isInitDone = initDep.length ? initDep[0].processed : true;
+                if (isScriptLoaded &&
+                    isInitDone &&
+                    this.isReviewed(task.srv) &&
+                    this.hasConsent(task.srv)) {
+                    task.handler();
+                    task.processed = true;
+                    console.log(`[${task.srv}] task done`);
+                }
+                return task;
+            })
+                .filter((task) => !task.processed);
+        }
+        store() {
+            const consents = this._services.map((srv) => ({
+                srv: srv.name,
+                v: this._consents.some((c) => c.srv === srv.name)
+                    ? this._consents.filter((c) => c.srv === srv.name)[0].v
+                    : false,
+                r: this._consents.some((c) => c.srv === srv.name)
+                    ? this._consents.filter((c) => c.srv === srv.name)[0].r
+                    : false,
+            }));
+            this._consents = consents;
+            ls.setItem(LS_ITEM_NAME, consents);
+        }
+        init() {
+            this._execScriptTaskQueue();
+            this._execInitTaskQueue();
+        }
+        setConsent(value, service = '') {
+            if (!service)
+                for (const consent of this._consents) {
+                    consent.v = value;
+                    consent.r = true;
+                }
+            else
+                this._consents = this._consents.map((consent) => {
+                    if (consent.srv === service) {
+                        consent.v = value;
+                        consent.r = true;
+                    }
+                    return consent;
+                });
+            this.store();
+            this._execScriptTaskQueue();
+            this._execInitTaskQueue();
+            this._execTasksQueue();
+        }
+        setUnreviewedConsents(value) {
+            this._consents = this._consents.map((consent) => {
+                if (!consent.r)
+                    consent.v = value;
+                consent.r = true;
+                return consent;
+            });
+            this.store();
+            this._execScriptTaskQueue();
+            this._execInitTaskQueue();
+            this._execTasksQueue();
+        }
+        getRCService() {
+            return this._rcService;
+        }
+        getTrackingServices() {
+            return this._services.map((srv) => ({
+                isEditable: true,
+                name: srv.name,
+                consent: {
+                    value: this._consents.some((c) => c.srv === srv.name)
+                        ? this._consents.filter((c) => c.srv === srv.name)[0].v
+                        : false,
+                    reviewed: this._consents.some((c) => c.srv === srv.name)
+                        ? this._consents.filter((c) => c.srv === srv.name)[0].r
+                        : false,
+                },
+                ts: srv,
+            }));
+        }
+        isReviewed(service = '') {
+            if (!service)
+                return this._consents.every((consent) => consent.r);
+            return !!this._consents.filter((consent) => consent.srv === service && consent.r).length;
+        }
+        hasConsent(service = '') {
+            if (!service)
+                return this._consents.every((consent) => consent.v);
+            return !!this._consents.filter((consent) => consent.srv === service && consent.v).length;
+        }
+        hasGlobalConsent(value) {
+            return this._consents.every((c) => c.v === value);
+        }
+    }
 
     const findElementChildByAttr = (el, attr, attrVal = '') => {
         let found = null;
@@ -491,7 +534,7 @@
                     elSrvType = createElmt('p', ['ot-settings__service-type']);
                     elSrvType.innerHTML = service.type;
                 }
-                elSrvName.innerHTML = service.tsw.label;
+                elSrvName.innerHTML = service.ts.label;
                 elSrvHeader.append(elSrvName);
                 if (elSrvType)
                     elSrvHeader.append(elSrvType);
@@ -689,14 +732,14 @@
         }
         service(name) {
             if (checkForValidServiceName(name, this._services.map((s) => s.name)))
-                return this._services.filter((s) => s.name === name)[0].tsw;
+                return this._services.filter((s) => s.name === name)[0].ts;
         }
     }
 
     var index = (config) => {
-        if (!window._OT && checkForValidConfig(config))
-            window._OT = new OwnTrack(config);
-        return window._OT;
+        if (!window.__owntrack && checkForValidConfig(config))
+            window.__owntrack = new OwnTrack(config);
+        return window.__owntrack;
     };
 
     return index;

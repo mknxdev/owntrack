@@ -5,12 +5,12 @@ import './css/ot.css'
 
 declare global {
   interface Window {
-    _OT: OwnTrack
+    __owntrack: OwnTrack
   }
 }
 
 export default (config: Config): OwnTrack => {
-  if (!window._OT && checkForValidConfig(config))
-    window._OT = new OwnTrack(config)
-  return window._OT
+  if (!window.__owntrack && checkForValidConfig(config))
+    window.__owntrack = new OwnTrack(config)
+  return window.__owntrack
 }

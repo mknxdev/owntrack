@@ -152,7 +152,7 @@ export default class DOMProxy {
         elSrvType = createElmt('p', ['ot-settings__service-type'])
         elSrvType.innerHTML = service.type
       }
-      elSrvName.innerHTML = service.tsw.label
+      elSrvName.innerHTML = service.ts.label
       elSrvHeader.append(elSrvName)
       if (elSrvType) elSrvHeader.append(elSrvType)
       let elSrvDesc: Element

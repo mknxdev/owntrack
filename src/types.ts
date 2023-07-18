@@ -22,7 +22,7 @@ export type TrackingServiceContainer = {
   type?: string
   description?: string
   consent: Consent
-  tsw: TrackingService
+  ts: TrackingService
 }
 export type TrackingServiceConsent = {
   srv: string

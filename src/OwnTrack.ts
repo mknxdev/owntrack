@@ -31,6 +31,6 @@ export default class OwnTrack {
         this._services.map((s) => s.name),
       )
     )
-      return this._services.filter((s) => s.name === name)[0].tsw
+      return this._services.filter((s) => s.name === name)[0].ts
   }
 }
