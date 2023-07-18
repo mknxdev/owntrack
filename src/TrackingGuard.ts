@@ -6,6 +6,11 @@ import {
 import ls from './helpers/ls'
 import TrackingService from './TrackingService'
 
+type Script = {
+  srv: string
+  url: string
+  processed: boolean
+}
 type InitTask = {
   srv: string
   handler: Function
@@ -21,6 +26,7 @@ const LS_ITEM_NAME = 'owntrack_uc'
 export default class TrackingGuard {
   _services: TrackingService[] = []
   _consents: TrackingServiceConsent[] = []
+  _scriptQueues: Script[] = []
   _initTaskQueue: InitTask[] = []
   _tasksQueue: Task[] = []
   // rc: required cookies
@@ -45,12 +51,14 @@ export default class TrackingGuard {
     onInit,
     handlers,
   }: ConfigService): TrackingServiceContainer {
+    if (scriptUrl)
+      this._scriptQueues.push({ srv: name, url: scriptUrl, processed: false })
     if (onInit)
       this._initTaskQueue.push({ srv: name, handler: onInit, processed: false })
     const srv = new TrackingService(name, label)
     if (handlers)
       for (const [fnName, fn] of Object.entries(handlers)) {
-        srv[fnName] = this._getWrappedTrackingFn(name, /* fnName, */ fn)
+        srv[fnName] = this._getWrappedTrackingFn(name, fn)
       }
     this._services.push(srv)
     return {
@@ -65,10 +73,7 @@ export default class TrackingGuard {
       tsw: srv,
     }
   }
-  _getWrappedTrackingFn(
-    srv: string,
-    /* handlerName: string, */ handler: Function,
-  ) {
+  _getWrappedTrackingFn(srv: string, handler: Function) {
     return () => {
       if (this.hasConsent(srv)) return handler()
       else if (!this.isReviewed(srv))
@@ -78,14 +83,26 @@ export default class TrackingGuard {
         })
     }
   }
+  _execScriptQueue(): void {
+    this._scriptQueues = this._scriptQueues
+      .map((task) => {
+        if (this.hasConsent(task.srv)) {
+          // inject script
+        }
+        return task
+      })
+      .filter((task) => !task.processed)
+  }
   _execInitTaskQueue(): void {
-    this._initTaskQueue = this._initTaskQueue.filter((task) => {
-      if (this.hasConsent(task.srv) && !task.processed) {
-        task.handler()
-        task.processed = true
-      }
-      return task
-    })
+    this._initTaskQueue = this._initTaskQueue
+      .map((task) => {
+        if (this.hasConsent(task.srv)) {
+          task.processed = true
+          task.handler()
+        }
+        return task
+      })
+      .filter((task) => !task.processed)
   }
   _execTasksQueue(): void {
     this._tasksQueue = this._tasksQueue.filter((task) => {
@@ -125,6 +142,7 @@ export default class TrackingGuard {
         return consent
       })
     this.store()
+    this._execScriptQueue()
     this._execInitTaskQueue()
     this._execTasksQueue()
   }
@@ -135,6 +153,7 @@ export default class TrackingGuard {
       return consent
     })
     this.store()
+    this._execScriptQueue()
     this._execInitTaskQueue()
     this._execTasksQueue()
   }

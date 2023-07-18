@@ -8,6 +8,7 @@ export const checkForValidConfig = (config: Config): boolean => {
         'OwnTrack: A configuration object is required at first call.',
       )
     // config.services
+    if (!config.services) throw new Error(`OwnTrack: 'services' is required.`)
     if (!Array.isArray(config.services))
       throw new Error(`OwnTrack: 'services' must be an array.`)
     // config.services.service

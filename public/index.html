@@ -14,35 +14,15 @@
             description: 'The Google all-in-one analytics tool.',
             // scriptUrl:
             //   'https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5',
-            // onInit: () => {
-            //   window.dataLayer = window.dataLayer || []
-            //   function gtag() {
-            //     dataLayer.push(arguments)
-            //   }
-            //   gtag('js', new Date())
-            //   gtag('config', 'G-JSRE6N82F5')
-            // },
-            handlers: {
-              setDimensions: () => {
-                console.log('coucou ga.setDimensions')
-              },
+            onInit: () => {
+              console.log('coucou ga init')
+              // window.dataLayer = window.dataLayer || []
+              // function gtag() {
+              //   dataLayer.push(arguments)
+              // }
+              // gtag('js', new Date())
+              // gtag('config', 'G-JSRE6N82F5')
             },
-          },
-          {
-            name: 'ga',
-            label: 'Google Analytics V4',
-            type: 'Analytics',
-            description: 'The Google all-in-one analytics tool.',
-            // scriptUrl:
-            //   'https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5',
-            // onInit: () => {
-            //   window.dataLayer = window.dataLayer || []
-            //   function gtag() {
-            //     dataLayer.push(arguments)
-            //   }
-            //   gtag('js', new Date())
-            //   gtag('config', 'G-JSRE6N82F5')
-            // },
             handlers: {
               setDimensions: () => {
                 console.log('coucou ga.setDimensions')
@@ -54,7 +34,7 @@
       ot.service('ga').setDimensions()
       ot.service('ga').setDimensions()
       ot.service('ga').setDimensions()
-      console.log(ot)
+      console.log(ot._trackingGuard._initTaskQueue[0])
       console.log(window.dataLayer)
     </script>
     <link rel="stylesheet" href="./dist/owntrack.css" />

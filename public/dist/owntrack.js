@@ -10,6 +10,8 @@
             if (!config)
                 throw new Error('OwnTrack: A configuration object is required at first call.');
             // config.services
+            if (!config.services)
+                throw new Error(`OwnTrack: 'services' is required.`);
             if (!Array.isArray(config.services))
                 throw new Error(`OwnTrack: 'services' must be an array.`);
             // config.services.service
@@ -111,6 +113,7 @@
         constructor() {
             this._services = [];
             this._consents = [];
+            this._scriptQueues = [];
             this._initTaskQueue = [];
             this._tasksQueue = [];
             // rc: required cookies
@@ -124,12 +127,14 @@
             this._consents = ls.getItem(LS_ITEM_NAME) || [];
         }
         wrapService({ name, label, type, description, scriptUrl, onInit, handlers, }) {
+            if (scriptUrl)
+                this._scriptQueues.push({ srv: name, url: scriptUrl, processed: false });
             if (onInit)
                 this._initTaskQueue.push({ srv: name, handler: onInit, processed: false });
             const srv = new TrackingService(name, label);
             if (handlers)
                 for (const [fnName, fn] of Object.entries(handlers)) {
-                    srv[fnName] = this._getWrappedTrackingFn(name, /* fnName, */ fn);
+                    srv[fnName] = this._getWrappedTrackingFn(name, fn);
                 }
             this._services.push(srv);
             return {
@@ -144,8 +149,7 @@
                 tsw: srv,
             };
         }
-        _getWrappedTrackingFn(srv, 
-        /* handlerName: string, */ handler) {
+        _getWrappedTrackingFn(srv, handler) {
             return () => {
                 if (this.hasConsent(srv))
                     return handler();
@@ -156,14 +160,24 @@
                     });
             };
         }
+        _execScriptQueue() {
+            this._scriptQueues = this._scriptQueues
+                .map((task) => {
+                if (this.hasConsent(task.srv)) ;
+                return task;
+            })
+                .filter((task) => !task.processed);
+        }
         _execInitTaskQueue() {
-            this._initTaskQueue = this._initTaskQueue.filter((task) => {
-                if (this.hasConsent(task.srv) && !task.processed) {
-                    task.handler();
+            this._initTaskQueue = this._initTaskQueue
+                .map((task) => {
+                if (this.hasConsent(task.srv)) {
                     task.processed = true;
+                    task.handler();
                 }
                 return task;
-            });
+            })
+                .filter((task) => !task.processed);
         }
         _execTasksQueue() {
             this._tasksQueue = this._tasksQueue.filter((task) => {
@@ -205,6 +219,7 @@
                     return consent;
                 });
             this.store();
+            this._execScriptQueue();
             this._execInitTaskQueue();
             this._execTasksQueue();
         }
@@ -216,6 +231,7 @@
                 return consent;
             });
             this.store();
+            this._execScriptQueue();
             this._execInitTaskQueue();
             this._execTasksQueue();
         }
