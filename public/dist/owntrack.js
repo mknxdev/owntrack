@@ -377,17 +377,6 @@
         }
         return found;
     };
-    const findElementChildByClass = (el, _class) => {
-        let found = null;
-        for (let i = 0; i < el.children.length; i++) {
-            const child = el.children[i];
-            if (child.classList.contains(_class))
-                found = child;
-            else if (!found)
-                found = findElementChildByClass(child, _class);
-        }
-        return found;
-    };
 
     class DOMProxy {
         constructor(trackingGuard) {
@@ -405,6 +394,7 @@
                 sc: createElmt('div'),
                 srvr: createElmt('div'),
             };
+            this._entryDisplayed = false;
             this._settingsDisplayed = false;
             this._trackingGuard = trackingGuard;
         }
@@ -415,14 +405,9 @@
         _initEntry() {
             this._d.er = createElmt('div', ['ot-entry-wrapper']);
             const elEntry = createElmt('div', ['ot-entry']);
-            // const elEntryCP = createElmt('div', ['ot-entry__cp'])
-            // const elEntryCPLogo = createElmt('div', ['ot-entry__cp-logo'])
-            // elEntryCPLogo.append(getLogoElement())
             const elEntryNotice = createElmt('div', ['ot-entry__notice']);
             elEntryNotice.innerHTML =
                 '<p>This website uses cookies &amp; analytics for tracking and/or advertising purposes. You can choose to accept them or not.</p>';
-            // elEntryCP.append(elEntryCPLogo)
-            // elEntry.append(elEntryCP)
             elEntry.append(elEntryNotice);
             const btns = [
                 {
@@ -435,13 +420,13 @@
                     t: 'Deny',
                     c: ['otua-deny', 'ot-btn'],
                     a: { 'data-ot-entry-ua': 'deny' },
-                    h: this._onDenyAllServicesClick.bind(this),
+                    h: this._onEDenyAllServicesClick.bind(this),
                 },
                 {
                     t: 'Allow',
                     c: ['otua-allow', 'ot-btn'],
                     a: { 'data-ot-entry-ua': 'allow' },
-                    h: this._onAllowAllServicesClick.bind(this),
+                    h: this._onEAllowAllServicesClick.bind(this),
                 },
                 {
                     i: 'close',
@@ -466,7 +451,7 @@
             }
             elEntry.append(elEntryBtns);
             this._d.er.append(elEntry);
-            this._d.r.append(this._d.er);
+            // this._d.r.append(this._d.er)
         }
         _initSettingsBase() {
             this._d.sr.classList.add('ot-settings-overlay');
@@ -495,13 +480,13 @@
                     t: 'Deny all',
                     c: ['otua-deny', 'ot-btn', 'otua-deny'],
                     a: { 'data-ot-settings-ua': 'deny' },
-                    h: this._onDenyAllServicesClick.bind(this),
+                    h: this._onSDenyAllServicesClick.bind(this),
                 },
                 {
                     t: 'Allow all',
                     c: ['otua-allow', 'ot-btn', 'otua-allow'],
                     a: { 'data-ot-settings-ua': 'allow' },
-                    h: this._onAllowAllServicesClick.bind(this),
+                    h: this._onSAllowAllServicesClick.bind(this),
                 },
             ];
             const elGActionsBtns = createElmt('div', [
@@ -596,6 +581,20 @@
             this._d.sc.append(elEntryCP);
         }
         _render() {
+            // base
+            if (this._entryDisplayed) {
+                this._d.r.append(this._d.er);
+            }
+            else {
+                this._d.er.remove();
+            }
+            if (this._settingsDisplayed) {
+                this._d.sr.append(this._d.sc);
+                this._d.r.append(this._d.sr);
+            }
+            else {
+                this._d.sr.remove();
+            }
             // entry + settings
             const elBtnESettings = findElementChildByAttr(this._d.r, 'data-ot-entry-ua', 'settings');
             if (elBtnESettings) {
@@ -643,33 +642,37 @@
         _onMainCloseClick() {
             this._trackingGuard.setUnreviewedConsents(false);
             this._services = this._trackingGuard.getTrackingServices();
+            this._entryDisplayed = false;
+            this._settingsDisplayed = false;
             this._render();
-            if (findElementChildByClass(this._d.r, 'ot-settings-overlay'))
-                this._d.sr.remove();
-            if (findElementChildByClass(this._d.r, 'ot-entry-wrapper'))
-                this._d.er.remove();
         }
         _onSettingsOpenClick() {
             this._settingsDisplayed = true;
-            if (!findElementChildByClass(this._d.r, 'ot-settings-overlay'))
-                this._d.r.append(this._d.sr);
             this._render();
         }
         _onSettingsCloseClick() {
             this._settingsDisplayed = false;
-            if (findElementChildByClass(this._d.r, 'ot-settings-overlay'))
-                this._d.sr.remove();
-            if (this._trackingGuard.isReviewed() &&
-                findElementChildByClass(this._d.r, 'ot-entry-wrapper'))
-                this._d.er.remove();
+            this._entryDisplayed = !this._trackingGuard.isReviewed();
             this._render();
         }
-        _onAllowAllServicesClick() {
+        _onEAllowAllServicesClick() {
+            this._trackingGuard.setConsent(true);
+            this.setEntryState(false);
+            this._services = this._trackingGuard.getTrackingServices();
+            this._render();
+        }
+        _onEDenyAllServicesClick() {
+            this._trackingGuard.setConsent(false);
+            this.setEntryState(false);
+            this._services = this._trackingGuard.getTrackingServices();
+            this._render();
+        }
+        _onSAllowAllServicesClick() {
             this._trackingGuard.setConsent(true);
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
         }
-        _onDenyAllServicesClick() {
+        _onSDenyAllServicesClick() {
             this._trackingGuard.setConsent(false);
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
@@ -691,12 +694,11 @@
                 return 'Allowed';
             return 'Denied';
         }
+        setEntryState(value) {
+            this._entryDisplayed = value;
+        }
         mount() {
             this._render();
-            this._d.sr.append(this._d.sc);
-            if (this._settingsDisplayed) {
-                this._d.r.append(this._d.sr);
-            }
             document.body.append(this._d.r);
         }
         setServices(services) {
@@ -721,6 +723,7 @@
                 this._services.push(this._trackingGuard.wrapService(service));
             this._trackingGuard.store();
             this._trackingGuard.init();
+            this._dp.setEntryState(!this._trackingGuard.isReviewed());
             this._dp.setServices([
                 this._trackingGuard.getRCService(),
                 ...this._services,

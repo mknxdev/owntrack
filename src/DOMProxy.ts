@@ -22,6 +22,7 @@ export default class DOMProxy {
     sc: createElmt('div'),
     srvr: createElmt('div'),
   }
+  _entryDisplayed = false
   _settingsDisplayed = false
 
   constructor(trackingGuard: TrackingGuard) {
@@ -34,14 +35,9 @@ export default class DOMProxy {
   _initEntry(): void {
     this._d.er = createElmt('div', ['ot-entry-wrapper'])
     const elEntry = createElmt('div', ['ot-entry'])
-    // const elEntryCP = createElmt('div', ['ot-entry__cp'])
-    // const elEntryCPLogo = createElmt('div', ['ot-entry__cp-logo'])
-    // elEntryCPLogo.append(getLogoElement())
     const elEntryNotice = createElmt('div', ['ot-entry__notice'])
     elEntryNotice.innerHTML =
       '<p>This website uses cookies &amp; analytics for tracking and/or advertising purposes. You can choose to accept them or not.</p>'
-    // elEntryCP.append(elEntryCPLogo)
-    // elEntry.append(elEntryCP)
     elEntry.append(elEntryNotice)
     const btns = [
       {
@@ -54,13 +50,13 @@ export default class DOMProxy {
         t: 'Deny',
         c: ['otua-deny', 'ot-btn'],
         a: { 'data-ot-entry-ua': 'deny' },
-        h: this._onDenyAllServicesClick.bind(this),
+        h: this._onEDenyAllServicesClick.bind(this),
       },
       {
         t: 'Allow',
         c: ['otua-allow', 'ot-btn'],
         a: { 'data-ot-entry-ua': 'allow' },
-        h: this._onAllowAllServicesClick.bind(this),
+        h: this._onEAllowAllServicesClick.bind(this),
       },
       {
         i: 'close',
@@ -84,7 +80,7 @@ export default class DOMProxy {
     }
     elEntry.append(elEntryBtns)
     this._d.er.append(elEntry)
-    this._d.r.append(this._d.er)
+    // this._d.r.append(this._d.er)
   }
   _initSettingsBase(): void {
     this._d.sr.classList.add('ot-settings-overlay')
@@ -113,13 +109,13 @@ export default class DOMProxy {
         t: 'Deny all',
         c: ['otua-deny', 'ot-btn', 'otua-deny'],
         a: { 'data-ot-settings-ua': 'deny' },
-        h: this._onDenyAllServicesClick.bind(this),
+        h: this._onSDenyAllServicesClick.bind(this),
       },
       {
         t: 'Allow all',
         c: ['otua-allow', 'ot-btn', 'otua-allow'],
         a: { 'data-ot-settings-ua': 'allow' },
-        h: this._onAllowAllServicesClick.bind(this),
+        h: this._onSAllowAllServicesClick.bind(this),
       },
     ]
     const elGActionsBtns = createElmt('div', [
@@ -210,6 +206,18 @@ export default class DOMProxy {
     this._d.sc.append(elEntryCP)
   }
   _render(): void {
+    // base
+    if (this._entryDisplayed) {
+      this._d.r.append(this._d.er)
+    } else {
+      this._d.er.remove()
+    }
+    if (this._settingsDisplayed) {
+      this._d.sr.append(this._d.sc)
+      this._d.r.append(this._d.sr)
+    } else {
+      this._d.sr.remove()
+    }
     // entry + settings
     const elBtnESettings = findChildByAttr(
       this._d.r,
@@ -281,35 +289,37 @@ export default class DOMProxy {
   _onMainCloseClick(): void {
     this._trackingGuard.setUnreviewedConsents(false)
     this._services = this._trackingGuard.getTrackingServices()
+    this._entryDisplayed = false
+    this._settingsDisplayed = false
     this._render()
-    if (findElementChildByClass(this._d.r, 'ot-settings-overlay'))
-      this._d.sr.remove()
-    if (findElementChildByClass(this._d.r, 'ot-entry-wrapper'))
-      this._d.er.remove()
   }
   _onSettingsOpenClick(): void {
     this._settingsDisplayed = true
-    if (!findElementChildByClass(this._d.r, 'ot-settings-overlay'))
-      this._d.r.append(this._d.sr)
     this._render()
   }
   _onSettingsCloseClick(): void {
     this._settingsDisplayed = false
-    if (findElementChildByClass(this._d.r, 'ot-settings-overlay'))
-      this._d.sr.remove()
-    if (
-      this._trackingGuard.isReviewed() &&
-      findElementChildByClass(this._d.r, 'ot-entry-wrapper')
-    )
-      this._d.er.remove()
+    this._entryDisplayed = !this._trackingGuard.isReviewed()
     this._render()
   }
-  _onAllowAllServicesClick(): void {
+  _onEAllowAllServicesClick(): void {
+    this._trackingGuard.setConsent(true)
+    this.setEntryState(false)
+    this._services = this._trackingGuard.getTrackingServices()
+    this._render()
+  }
+  _onEDenyAllServicesClick(): void {
+    this._trackingGuard.setConsent(false)
+    this.setEntryState(false)
+    this._services = this._trackingGuard.getTrackingServices()
+    this._render()
+  }
+  _onSAllowAllServicesClick(): void {
     this._trackingGuard.setConsent(true)
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
-  _onDenyAllServicesClick(): void {
+  _onSDenyAllServicesClick(): void {
     this._trackingGuard.setConsent(false)
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
@@ -329,12 +339,11 @@ export default class DOMProxy {
     if (srv.consent.value) return 'Allowed'
     return 'Denied'
   }
+  setEntryState(value: boolean): void {
+    this._entryDisplayed = value
+  }
   mount(): void {
     this._render()
-    this._d.sr.append(this._d.sc)
-    if (this._settingsDisplayed) {
-      this._d.r.append(this._d.sr)
-    }
     document.body.append(this._d.r)
   }
   setServices(services: TrackingServiceContainer[]): void {
