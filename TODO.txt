@@ -10,6 +10,7 @@
 
 - Integrate a wording customization system
 - Provide CSS vars & OT-related classes list to allow styling customization
+- Cookies types + counter detection
 
 >>> P2
 
