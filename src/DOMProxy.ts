@@ -9,21 +9,17 @@ import TrackingGuard from './TrackingGuard'
 export default class DOMProxy {
   _trackingGuard: TrackingGuard
   _services: TrackingServiceContainer[] = []
-  // _d: DOM
-  // _d.r: root
-  // _d.r: entry root
-  // _d.sr: settings root
-  // _d.sc: settings content
-  // _d.srvr: services root
-  _d: { r: Element; er: Element; sr: Element; sc: Element; srvr: Element } = {
-    r: createElmt('div'),
-    er: createElmt('div'),
-    sr: createElmt('div'),
-    sc: createElmt('div'),
-    srvr: createElmt('div'),
-  }
+  _triggerDisplayed = false
   _entryDisplayed = false
   _settingsDisplayed = false
+  _d: { r: Element; tr: Element; er: Element; sr: Element; sc: Element; srvr: Element } = {
+    r: createElmt('div'), // root
+    tr: createElmt('div'), // trigger root
+    er: createElmt('div'), // entry root
+    sr: createElmt('div'), // settings root
+    sc: createElmt('div'), // settings content
+    srvr: createElmt('div'), // services root
+  }
 
   constructor(trackingGuard: TrackingGuard) {
     this._trackingGuard = trackingGuard
@@ -31,6 +27,10 @@ export default class DOMProxy {
   _initBase(): void {
     this._d.r = document.createElement('div')
     this._d.r.classList.add('ot-root')
+  }
+  _initTrigger(): void {
+    this._d.tr.classList.add('ot-trigger')
+    this._d.tr.innerHTML = 'OT'
   }
   _initEntry(): void {
     this._d.er = createElmt('div', ['ot-entry-wrapper'])
@@ -80,7 +80,6 @@ export default class DOMProxy {
     }
     elEntry.append(elEntryBtns)
     this._d.er.append(elEntry)
-    // this._d.r.append(this._d.er)
   }
   _initSettingsBase(): void {
     this._d.sr.classList.add('ot-settings-overlay')
@@ -207,6 +206,11 @@ export default class DOMProxy {
   }
   _render(): void {
     // base
+    if (this._triggerDisplayed) {
+      this._d.r.append(this._d.tr)
+    } else {
+      this._d.tr.remove()
+    }
     if (this._entryDisplayed) {
       this._d.r.append(this._d.er)
     } else {
@@ -289,6 +293,7 @@ export default class DOMProxy {
   _onMainCloseClick(): void {
     this._trackingGuard.setUnreviewedConsents(false)
     this._services = this._trackingGuard.getTrackingServices()
+    this.setTriggerState(true)
     this._entryDisplayed = false
     this._settingsDisplayed = false
     this._render()
@@ -299,18 +304,21 @@ export default class DOMProxy {
   }
   _onSettingsCloseClick(): void {
     this._settingsDisplayed = false
+    this._triggerDisplayed = this._trackingGuard.isReviewed()
     this._entryDisplayed = !this._trackingGuard.isReviewed()
     this._render()
   }
   _onEAllowAllServicesClick(): void {
     this._trackingGuard.setConsent(true)
-    this.setEntryState(false)
+    this.setTriggerState(true)
+    this._entryDisplayed = false
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
   _onEDenyAllServicesClick(): void {
     this._trackingGuard.setConsent(false)
-    this.setEntryState(false)
+    this.setTriggerState(true)
+    this._entryDisplayed = false
     this._services = this._trackingGuard.getTrackingServices()
     this._render()
   }
@@ -339,6 +347,9 @@ export default class DOMProxy {
     if (srv.consent.value) return 'Allowed'
     return 'Denied'
   }
+  setTriggerState(value: boolean): void {
+    this._triggerDisplayed = value
+  }
   setEntryState(value: boolean): void {
     this._entryDisplayed = value
   }
@@ -350,7 +361,10 @@ export default class DOMProxy {
     this._services = services
   }
   init(): void {
+    this._triggerDisplayed = this._trackingGuard.isReviewed()
+    this._entryDisplayed = !this._trackingGuard.isReviewed()
     this._initBase()
+    this._initTrigger()
     this._initEntry()
     this._initSettingsBase()
     this._initSettingsHeader()

@@ -14,7 +14,6 @@ export default class OwnTrack {
       this._services.push(this._trackingGuard.wrapService(service))
     this._trackingGuard.store()
     this._trackingGuard.init()
-    this._dp.setEntryState(!this._trackingGuard.isReviewed())
     this._dp.setServices([
       this._trackingGuard.getRCService(),
       ...this._services,

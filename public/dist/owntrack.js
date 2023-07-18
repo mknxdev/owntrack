@@ -381,26 +381,26 @@
     class DOMProxy {
         constructor(trackingGuard) {
             this._services = [];
-            // _d: DOM
-            // _d.r: root
-            // _d.r: entry root
-            // _d.sr: settings root
-            // _d.sc: settings content
-            // _d.srvr: services root
+            this._triggerDisplayed = false;
+            this._entryDisplayed = false;
+            this._settingsDisplayed = false;
             this._d = {
                 r: createElmt('div'),
+                tr: createElmt('div'),
                 er: createElmt('div'),
                 sr: createElmt('div'),
                 sc: createElmt('div'),
-                srvr: createElmt('div'),
+                srvr: createElmt('div'), // services root
             };
-            this._entryDisplayed = false;
-            this._settingsDisplayed = false;
             this._trackingGuard = trackingGuard;
         }
         _initBase() {
             this._d.r = document.createElement('div');
             this._d.r.classList.add('ot-root');
+        }
+        _initTrigger() {
+            this._d.tr.classList.add('ot-trigger');
+            this._d.tr.innerHTML = 'OT';
         }
         _initEntry() {
             this._d.er = createElmt('div', ['ot-entry-wrapper']);
@@ -451,7 +451,6 @@
             }
             elEntry.append(elEntryBtns);
             this._d.er.append(elEntry);
-            // this._d.r.append(this._d.er)
         }
         _initSettingsBase() {
             this._d.sr.classList.add('ot-settings-overlay');
@@ -582,6 +581,12 @@
         }
         _render() {
             // base
+            if (this._triggerDisplayed) {
+                this._d.r.append(this._d.tr);
+            }
+            else {
+                this._d.tr.remove();
+            }
             if (this._entryDisplayed) {
                 this._d.r.append(this._d.er);
             }
@@ -642,6 +647,7 @@
         _onMainCloseClick() {
             this._trackingGuard.setUnreviewedConsents(false);
             this._services = this._trackingGuard.getTrackingServices();
+            this.setTriggerState(true);
             this._entryDisplayed = false;
             this._settingsDisplayed = false;
             this._render();
@@ -652,18 +658,21 @@
         }
         _onSettingsCloseClick() {
             this._settingsDisplayed = false;
+            this._triggerDisplayed = this._trackingGuard.isReviewed();
             this._entryDisplayed = !this._trackingGuard.isReviewed();
             this._render();
         }
         _onEAllowAllServicesClick() {
             this._trackingGuard.setConsent(true);
-            this.setEntryState(false);
+            this.setTriggerState(true);
+            this._entryDisplayed = false;
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
         }
         _onEDenyAllServicesClick() {
             this._trackingGuard.setConsent(false);
-            this.setEntryState(false);
+            this.setTriggerState(true);
+            this._entryDisplayed = false;
             this._services = this._trackingGuard.getTrackingServices();
             this._render();
         }
@@ -694,6 +703,9 @@
                 return 'Allowed';
             return 'Denied';
         }
+        setTriggerState(value) {
+            this._triggerDisplayed = value;
+        }
         setEntryState(value) {
             this._entryDisplayed = value;
         }
@@ -705,7 +717,10 @@
             this._services = services;
         }
         init() {
+            this._triggerDisplayed = this._trackingGuard.isReviewed();
+            this._entryDisplayed = !this._trackingGuard.isReviewed();
             this._initBase();
+            this._initTrigger();
             this._initEntry();
             this._initSettingsBase();
             this._initSettingsHeader();
@@ -723,7 +738,6 @@
                 this._services.push(this._trackingGuard.wrapService(service));
             this._trackingGuard.store();
             this._trackingGuard.init();
-            this._dp.setEntryState(!this._trackingGuard.isReviewed());
             this._dp.setServices([
                 this._trackingGuard.getRCService(),
                 ...this._services,
