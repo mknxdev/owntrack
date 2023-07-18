@@ -382,6 +382,7 @@
         constructor(trackingGuard) {
             this._services = [];
             this._triggerDisplayed = false;
+            this._manualOpen = false;
             this._entryDisplayed = false;
             this._settingsDisplayed = false;
             this._d = {
@@ -401,6 +402,7 @@
         _initTrigger() {
             this._d.tr.classList.add('ot-trigger');
             this._d.tr.innerHTML = 'OT';
+            this._d.tr.addEventListener('click', this._onMainTriggerClick.bind(this));
         }
         _initEntry() {
             this._d.er = createElmt('div', ['ot-entry-wrapper']);
@@ -644,12 +646,19 @@
                 }
             }
         }
+        _onMainTriggerClick() {
+            this._triggerDisplayed = false;
+            this._entryDisplayed = true;
+            this._manualOpen = true;
+            this._render();
+        }
         _onMainCloseClick() {
             this._trackingGuard.setUnreviewedConsents(false);
             this._services = this._trackingGuard.getTrackingServices();
             this.setTriggerState(true);
             this._entryDisplayed = false;
             this._settingsDisplayed = false;
+            this._manualOpen = false;
             this._render();
         }
         _onSettingsOpenClick() {
@@ -659,7 +668,8 @@
         _onSettingsCloseClick() {
             this._settingsDisplayed = false;
             this._triggerDisplayed = this._trackingGuard.isReviewed();
-            this._entryDisplayed = !this._trackingGuard.isReviewed();
+            if (!this._manualOpen)
+                this._entryDisplayed = !this._trackingGuard.isReviewed();
             this._render();
         }
         _onEAllowAllServicesClick() {
