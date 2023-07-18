@@ -124,10 +124,10 @@
   align-items: center;
   gap: 10px;
 }
-.ot-root .ot-entry .ot-entry__btns [data-ot-entry-ua="close"] {
+.ot-root .ot-entry .ot-entry__btns [data-ot-entry-ua='close'] {
   position: absolute;
   top: 50%;
-  transform: translate(0,-50%);
+  transform: translate(0, -50%);
   right: 10px;
 }
 
@@ -146,7 +146,7 @@
     padding: 0 15px 0 0;
     margin: 0;
   }
-  .ot-root .ot-entry .ot-entry__btns [data-ot-entry-ua="close"] {
+  .ot-root .ot-entry .ot-entry__btns [data-ot-entry-ua='close'] {
     position: static;
     transform: none;
   }
@@ -260,7 +260,10 @@
 .ot-root .ot-settings .ot-settings__service-content .ot-settings__service-desc {
   font-size: 13px;
 }
-.ot-root .ot-settings .ot-settings__service-content .ot-settings__service-state {
+.ot-root
+  .ot-settings
+  .ot-settings__service-content
+  .ot-settings__service-state {
   margin: 0;
   font-size: 12px;
   color: #999999;
@@ -279,6 +282,7 @@
 }
 .ot-root .ot-settings .ot-settings__cp-info {
   padding: 0 6px 0 0;
+  line-height: 1;
 }
 .ot-root .ot-settings .ot-settings__cp-logo {
   width: 18px;
@@ -293,7 +297,10 @@
     justify-content: center;
     align-items: initial;
   }
-  .ot-root .ot-settings .ot-settings__service-header p.ot-settings__service-name {
+  .ot-root
+    .ot-settings
+    .ot-settings__service-header
+    p.ot-settings__service-name {
     margin: 0 0 6px;
   }
 }
@@ -318,16 +325,25 @@
     flex: 0 0 80%;
     flex-direction: row;
   }
-  .ot-root .ot-settings .ot-settings__service-content .ot-settings__service-info {
+  .ot-root
+    .ot-settings
+    .ot-settings__service-content
+    .ot-settings__service-info {
     display: flex;
     flex-direction: column;
     margin: 0;
     padding: 0 15px 0 0;
   }
-  .ot-root .ot-settings .ot-settings__service-content .ot-settings__service-desc {
+  .ot-root
+    .ot-settings
+    .ot-settings__service-content
+    .ot-settings__service-desc {
     font-size: 14px;
   }
-  .ot-root .ot-settings .ot-settings__service-content .ot-settings__service-state {
+  .ot-root
+    .ot-settings
+    .ot-settings__service-content
+    .ot-settings__service-state {
     margin: 4px 0 0;
   }
 }
