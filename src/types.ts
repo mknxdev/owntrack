@@ -1,4 +1,4 @@
-import TrackingServiceWrapper from './TrackingServiceWrapper'
+import TrackingService from './TrackingService'
 
 export type ConfigService = {
   name: string
@@ -16,13 +16,13 @@ export type Consent = {
   value: boolean
   reviewed: boolean
 }
-export type TrackingServiceLayer = {
+export type TrackingServiceContainer = {
   isEditable: boolean
   name: string
   type?: string
   description?: string
   consent: Consent
-  tsw: TrackingServiceWrapper
+  tsw: TrackingService
 }
 export type TrackingServiceConsent = {
   srv: string

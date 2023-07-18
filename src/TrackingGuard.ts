@@ -1,30 +1,35 @@
 import {
   ConfigService,
   TrackingServiceConsent,
-  TrackingServiceLayer,
+  TrackingServiceContainer,
 } from './types'
 import ls from './helpers/ls'
-import TrackingServiceWrapper from './TrackingServiceWrapper'
+import TrackingService from './TrackingService'
 
-type Action = {
+type InitTask = {
   srv: string
   handler: Function
   processed: boolean
+}
+type Task = {
+  srv: string
+  handler: Function
 }
 
 const LS_ITEM_NAME = 'owntrack_uc'
 
 export default class TrackingGuard {
-  _services: TrackingServiceWrapper[] = []
+  _services: TrackingService[] = []
   _consents: TrackingServiceConsent[] = []
-  _actionsQueue: Action[] = []
+  _initTaskQueue: InitTask[] = []
+  _tasksQueue: Task[] = []
   // rc: required cookies
-  _rcService: TrackingServiceLayer = {
+  _rcService: TrackingServiceContainer = {
     isEditable: false,
     name: '_rc',
     description: 'This website uses some cookies needed for it to work. They cannot be disabled.',
     consent: { value: true, reviewed: true },
-    tsw: new TrackingServiceWrapper('_rc', 'Required cookies', () => {})
+    tsw: new TrackingService('_rc', 'Required cookies')
   }
 
   constructor() {
@@ -38,10 +43,12 @@ export default class TrackingGuard {
     trackingScriptUrl,
     onInit,
     handlers,
-  }: ConfigService): TrackingServiceLayer {
-    const srv = new TrackingServiceWrapper(name, label, onInit)
-    for (const [fnName, fn] of Object.entries(handlers))
-      srv[fnName] = this._setFnGuard(name, fn)
+  }: ConfigService): TrackingServiceContainer {
+    this._initTaskQueue.push({ srv: name, handler: onInit, processed: false })
+    const srv = new TrackingService(name, label)
+    for (const [fnName, fn] of Object.entries(handlers)) {
+      srv[fnName] = this._getWrappedTrackingFn(name, /* fnName, */ fn)
+    }
     this._services.push(srv)
     return {
       isEditable: true,
@@ -52,21 +59,33 @@ export default class TrackingGuard {
       tsw: srv,
     }
   }
-  _setFnGuard(srv: string, handler: Function) {
+  _getWrappedTrackingFn(srv: string, /* handlerName: string, */ handler: Function) {
     return () => {
       if (this.hasConsent(srv)) return handler()
-      else if (!this.isReviewed(srv)) this._actionsQueue.push({ srv, handler, processed: false })
+      else if (!this.isReviewed(srv)) this._tasksQueue.push({
+        srv,
+        handler,
+      })
     }
   }
-  _processActionsQueue() {
-    this._actionsQueue = this._actionsQueue.filter(action => {
-      if (!this.isReviewed(action.srv)) return true
-      if (this.hasConsent(action.srv)) action.handler()
+  _execInitTaskQueue(): void {
+    this._initTaskQueue = this._initTaskQueue.filter(task => {
+      if (this.hasConsent(task.srv) && !task.processed) {
+        task.handler()
+        task.processed = true
+      }
+      return task
+    })
+  }
+  _execTasksQueue(): void {
+    this._tasksQueue = this._tasksQueue.filter(task => {
+      if (!this.isReviewed(task.srv)) return true
+      if (this.hasConsent(task.srv)) task.handler()
       return false
     })
   }
   store(): void {
-    const consents = this._services.map((srv: TrackingServiceWrapper) => ({
+    const consents = this._services.map((srv: TrackingService) => ({
       srv: srv.name,
       v: this._consents.some((c) => c.srv === srv.name)
         ? this._consents.filter((c) => c.srv === srv.name)[0].v
@@ -77,6 +96,9 @@ export default class TrackingGuard {
     }))
     this._consents = consents
     ls.setItem(LS_ITEM_NAME, consents)
+  }
+  init(): void {
+    this._execInitTaskQueue()
   }
   setConsent(value: boolean, service = ''): void {
     if (!service)
@@ -93,7 +115,8 @@ export default class TrackingGuard {
         return consent
       })
     this.store()
-    this._processActionsQueue()
+    this._execInitTaskQueue()
+    this._execTasksQueue()
   }
   setUnreviewedConsents(value: boolean): void {
     this._consents = this._consents.map((consent) => {
@@ -102,14 +125,15 @@ export default class TrackingGuard {
       return consent
     })
     this.store()
-    this._processActionsQueue()
+    this._execInitTaskQueue()
+    this._execTasksQueue()
   }
-  getRCService(): TrackingServiceLayer {
+  getRCService(): TrackingServiceContainer {
     return this._rcService
   }
-  getTrackingServices(): TrackingServiceLayer[] {
+  getTrackingServices(): TrackingServiceContainer[] {
     return this._services.map(
-      (srv: TrackingServiceWrapper): TrackingServiceLayer => ({
+      (srv: TrackingService): TrackingServiceContainer => ({
         isEditable: true,
         name: srv.name,
         consent: {

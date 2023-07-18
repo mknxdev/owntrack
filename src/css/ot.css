@@ -105,6 +105,11 @@
   background-color: rgb(255, 255, 255);
   box-shadow: 0 1px 5px #d1d1d1;
 }
+.ot-root .ot-entry .ot-entry__cp {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
 .ot-root .ot-entry .ot-entry__notice {
   display: flex;
   align-items: center;
@@ -132,6 +137,10 @@
     flex-direction: row;
     align-items: stretch;
     padding: 10px;
+  }
+  .ot-root .ot-entry .ot-entry__cp-logo {
+    position: static;
+    transform: none;
   }
   .ot-root .ot-entry .ot-entry__notice {
     padding: 0 15px 0 0;
@@ -217,7 +226,7 @@
   background-color: #f3f3f3;
 }
 .ot-root .ot-settings .ot-settings__service-header p {
-  margin: 0;
+  margin: 0 0 6px;
 }
 .ot-root .ot-settings .ot-settings__service-header p.ot-settings__service-name {
   margin: 0;
@@ -227,6 +236,10 @@
 .ot-root .ot-settings .ot-settings__service-header p.ot-settings__service-type {
   font-size: 12px;
   color: #777777;
+}
+.ot-root .ot-settings .ot-settings__service-header p:last-of-type {
+  /* required to bypass ".ot-settings__service-name" selector */
+  margin: 0 !important;
 }
 .ot-root .ot-settings .ot-settings__service-content {
   flex: 0 0 75%;
@@ -255,6 +268,20 @@
 .ot-root .ot-settings .ot-settings__service-content .ot-settings__service-btns {
   display: flex;
   gap: 10px;
+}
+.ot-root .ot-settings .ot-settings__cp {
+  position: absolute;
+  right: 10px;
+  bottom: -16px;
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+}
+.ot-root .ot-settings .ot-settings__cp-info {
+  padding: 0 6px 0 0;
+}
+.ot-root .ot-settings .ot-settings__cp-logo {
+  width: 18px;
 }
 
 @media (min-width: 481px) {
