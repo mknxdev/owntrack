@@ -162,9 +162,9 @@ export default class DOMProxy {
       }
       let elSrvState: Element
       if (service.isEditable)
-      elSrvState = createElmt('div', ['ot-settings__service-state'], {
-        'data-ot-srv-state': '',
-      })
+        elSrvState = createElmt('div', ['ot-settings__service-state'], {
+          'data-ot-srv-state': '',
+        })
       if (elSrvDesc) elSrvInfo.append(elSrvDesc)
       if (elSrvState) elSrvInfo.append(elSrvState)
       let elSrvBtns: Element
@@ -236,17 +236,17 @@ export default class DOMProxy {
       'data-ot-settings-ua',
       'allow',
     )
-    if (elBtnEDenyAll) elBtnEDenyAll.classList.remove('ot-active')
-    if (elBtnEAllowAll) elBtnEAllowAll.classList.remove('ot-active')
-    if (elBtnSDenyAll) elBtnSDenyAll.classList.remove('ot-active')
-    if (elBtnSAllowAll) elBtnSAllowAll.classList.remove('ot-active')
+    elBtnEDenyAll?.classList.remove('ot-active')
+    elBtnEAllowAll?.classList.remove('ot-active')
+    elBtnSDenyAll?.classList.remove('ot-active')
+    elBtnSAllowAll?.classList.remove('ot-active')
     if (this._trackingGuard.isReviewed()) {
       if (this._trackingGuard.hasGlobalConsent(false)) {
-        elBtnEDenyAll.classList.add('ot-active')
-        elBtnSDenyAll.classList.add('ot-active')
+        elBtnEDenyAll?.classList.add('ot-active')
+        elBtnSDenyAll?.classList.add('ot-active')
       } else if (this._trackingGuard.hasGlobalConsent(true)) {
-        elBtnEAllowAll.classList.add('ot-active')
-        elBtnSAllowAll.classList.add('ot-active')
+        elBtnEAllowAll?.classList.add('ot-active')
+        elBtnSAllowAll?.classList.add('ot-active')
       }
     }
     // settings:services
@@ -269,16 +269,12 @@ export default class DOMProxy {
           'data-ot-settings-srv-ua',
           'allow',
         )
-        if (elBtnDeny) {
-          elBtnDeny.classList.remove('ot-active')
-          if (srv.consent.reviewed && !srv.consent.value)
-            elBtnDeny.classList.add('ot-active')
-        }
-        if (elBtnAllow) {
-          elBtnAllow.classList.remove('ot-active')
-          if (srv.consent.reviewed && srv.consent.value)
-          elBtnAllow.classList.add('ot-active')
-        }
+        elBtnDeny?.classList.remove('ot-active')
+        if (srv.consent.reviewed && !srv.consent.value)
+          elBtnDeny?.classList.add('ot-active')
+        elBtnAllow?.classList.remove('ot-active')
+        if (srv.consent.reviewed && srv.consent.value)
+          elBtnAllow?.classList.add('ot-active')
       }
     }
   }

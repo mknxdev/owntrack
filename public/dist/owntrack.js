@@ -15,24 +15,33 @@
             // config.services.service
             if (config.services) {
                 for (const srv of config.services) {
+                    // config.services.service[scriptUrl | onInit | handlers]
+                    if (!srv.scriptUrl && !srv.onInit && !srv.handlers)
+                        throw new Error(`OwnTrack: Service must contain at least one of the following properties: scriptUrl, onInit, handlers.`);
+                    // config.services.service.name
                     if (!srv.name)
                         throw new Error(`OwnTrack: Service: 'name' is required.`);
+                    // config.services.service.label
                     if (srv.label && typeof srv.label !== 'string')
                         throw new Error(`OwnTrack: Service: 'label' must be a string.`);
+                    // config.services.service.type
                     if (srv.type && typeof srv.type !== 'string')
                         throw new Error(`OwnTrack: Service: 'type' must be a string.`);
+                    // config.services.service.description
                     if (srv.description && typeof srv.description !== 'string')
                         throw new Error(`OwnTrack: Service: 'description' must be a string.`);
-                    if (!srv.trackingScriptUrl)
-                        throw new Error(`OwnTrack: Service: 'trackingScriptUrl' is required.`);
-                    if (typeof srv.trackingScriptUrl !== 'string')
-                        throw new Error(`OwnTrack: Service: 'trackingScriptUrl' must be a string.`);
-                    if (!srv.onInit || typeof srv.onInit !== 'function')
-                        throw new Error(`OwnTrack: Service: 'onInit' callback is required.`);
-                    if (!srv.handlers)
-                        throw new Error(`OwnTrack: Service: 'handlers' is required.`);
-                    if (typeof srv.handlers !== 'object')
+                    // config.services.service.scriptUrl
+                    if (srv.scriptUrl && typeof srv.scriptUrl !== 'string')
+                        throw new Error(`OwnTrack: Service: 'scriptUrl' must be a string.`);
+                    // config.services.service.onInit
+                    if (srv.onInit && typeof srv.onInit !== 'function')
+                        throw new Error(`OwnTrack: Service: 'onInit' must be a function.`);
+                    // config.services.service.handlers
+                    if (srv.handlers && typeof srv.handlers !== 'object')
                         throw new Error(`OwnTrack: Service: 'handlers' must be an object.`);
+                    if (srv.handlers &&
+                        Object.entries(srv.handlers).some((h) => typeof h[1] !== 'function'))
+                        throw new Error(`OwnTrack: Service: 'handlers' properties must be function declarations.`);
                 }
             }
         }
@@ -108,27 +117,33 @@
                 name: '_rc',
                 description: 'This website uses some cookies needed for it to work. They cannot be disabled.',
                 consent: { value: true, reviewed: true },
-                tsw: new TrackingService('_rc', 'Required cookies')
+                tsw: new TrackingService('_rc', 'Required cookies'),
             };
             this._consents = ls.getItem(LS_ITEM_NAME) || [];
         }
-        wrapService({ name, label, type, description, trackingScriptUrl, onInit, handlers, }) {
-            this._initTaskQueue.push({ srv: name, handler: onInit, processed: false });
+        wrapService({ name, label, type, description, scriptUrl, onInit, handlers, }) {
+            if (onInit)
+                this._initTaskQueue.push({ srv: name, handler: onInit, processed: false });
             const srv = new TrackingService(name, label);
-            for (const [fnName, fn] of Object.entries(handlers)) {
-                srv[fnName] = this._getWrappedTrackingFn(name, /* fnName, */ fn);
-            }
+            if (handlers)
+                for (const [fnName, fn] of Object.entries(handlers)) {
+                    srv[fnName] = this._getWrappedTrackingFn(name, /* fnName, */ fn);
+                }
             this._services.push(srv);
             return {
                 isEditable: true,
                 name,
                 type,
                 description,
-                consent: { value: this.hasConsent(name), reviewed: this.isReviewed(name) },
+                consent: {
+                    value: this.hasConsent(name),
+                    reviewed: this.isReviewed(name),
+                },
                 tsw: srv,
             };
         }
-        _getWrappedTrackingFn(srv, /* handlerName: string, */ handler) {
+        _getWrappedTrackingFn(srv, 
+        /* handlerName: string, */ handler) {
             return () => {
                 if (this.hasConsent(srv))
                     return handler();
@@ -140,7 +155,7 @@
             };
         }
         _execInitTaskQueue() {
-            this._initTaskQueue = this._initTaskQueue.filter(task => {
+            this._initTaskQueue = this._initTaskQueue.filter((task) => {
                 if (this.hasConsent(task.srv) && !task.processed) {
                     task.handler();
                     task.processed = true;
@@ -149,7 +164,7 @@
             });
         }
         _execTasksQueue() {
-            this._tasksQueue = this._tasksQueue.filter(task => {
+            this._tasksQueue = this._tasksQueue.filter((task) => {
                 if (!this.isReviewed(task.srv))
                     return true;
                 if (this.hasConsent(task.srv))
@@ -532,22 +547,18 @@
             const elBtnEAllowAll = findElementChildByAttr(this._d.r, 'data-ot-entry-ua', 'allow');
             const elBtnSDenyAll = findElementChildByAttr(this._d.sr, 'data-ot-settings-ua', 'deny');
             const elBtnSAllowAll = findElementChildByAttr(this._d.sr, 'data-ot-settings-ua', 'allow');
-            if (elBtnEDenyAll)
-                elBtnEDenyAll.classList.remove('ot-active');
-            if (elBtnEAllowAll)
-                elBtnEAllowAll.classList.remove('ot-active');
-            if (elBtnSDenyAll)
-                elBtnSDenyAll.classList.remove('ot-active');
-            if (elBtnSAllowAll)
-                elBtnSAllowAll.classList.remove('ot-active');
+            elBtnEDenyAll === null || elBtnEDenyAll === void 0 ? void 0 : elBtnEDenyAll.classList.remove('ot-active');
+            elBtnEAllowAll === null || elBtnEAllowAll === void 0 ? void 0 : elBtnEAllowAll.classList.remove('ot-active');
+            elBtnSDenyAll === null || elBtnSDenyAll === void 0 ? void 0 : elBtnSDenyAll.classList.remove('ot-active');
+            elBtnSAllowAll === null || elBtnSAllowAll === void 0 ? void 0 : elBtnSAllowAll.classList.remove('ot-active');
             if (this._trackingGuard.isReviewed()) {
                 if (this._trackingGuard.hasGlobalConsent(false)) {
-                    elBtnEDenyAll.classList.add('ot-active');
-                    elBtnSDenyAll.classList.add('ot-active');
+                    elBtnEDenyAll === null || elBtnEDenyAll === void 0 ? void 0 : elBtnEDenyAll.classList.add('ot-active');
+                    elBtnSDenyAll === null || elBtnSDenyAll === void 0 ? void 0 : elBtnSDenyAll.classList.add('ot-active');
                 }
                 else if (this._trackingGuard.hasGlobalConsent(true)) {
-                    elBtnEAllowAll.classList.add('ot-active');
-                    elBtnSAllowAll.classList.add('ot-active');
+                    elBtnEAllowAll === null || elBtnEAllowAll === void 0 ? void 0 : elBtnEAllowAll.classList.add('ot-active');
+                    elBtnSAllowAll === null || elBtnSAllowAll === void 0 ? void 0 : elBtnSAllowAll.classList.add('ot-active');
                 }
             }
             // settings:services
@@ -559,16 +570,12 @@
                         elState.innerHTML = this._getServiceStateLabel(srv);
                     const elBtnDeny = findElementChildByAttr(elSrv, 'data-ot-settings-srv-ua', 'deny');
                     const elBtnAllow = findElementChildByAttr(elSrv, 'data-ot-settings-srv-ua', 'allow');
-                    if (elBtnDeny) {
-                        elBtnDeny.classList.remove('ot-active');
-                        if (srv.consent.reviewed && !srv.consent.value)
-                            elBtnDeny.classList.add('ot-active');
-                    }
-                    if (elBtnAllow) {
-                        elBtnAllow.classList.remove('ot-active');
-                        if (srv.consent.reviewed && srv.consent.value)
-                            elBtnAllow.classList.add('ot-active');
-                    }
+                    elBtnDeny === null || elBtnDeny === void 0 ? void 0 : elBtnDeny.classList.remove('ot-active');
+                    if (srv.consent.reviewed && !srv.consent.value)
+                        elBtnDeny === null || elBtnDeny === void 0 ? void 0 : elBtnDeny.classList.add('ot-active');
+                    elBtnAllow === null || elBtnAllow === void 0 ? void 0 : elBtnAllow.classList.remove('ot-active');
+                    if (srv.consent.reviewed && srv.consent.value)
+                        elBtnAllow === null || elBtnAllow === void 0 ? void 0 : elBtnAllow.classList.add('ot-active');
                 }
             }
         }
@@ -655,7 +662,7 @@
             this._trackingGuard.init();
             this._dp.setServices([
                 this._trackingGuard.getRCService(),
-                ...this._services
+                ...this._services,
             ]);
             this._dp.init();
             window.addEventListener('DOMContentLoaded', () => {
@@ -663,8 +670,8 @@
             });
         }
         service(name) {
-            if (checkForValidServiceName(name, this._services.map(s => s.name)))
-                return this._services.filter(s => s.name === name)[0].tsw;
+            if (checkForValidServiceName(name, this._services.map((s) => s.name)))
+                return this._services.filter((s) => s.name === name)[0].tsw;
         }
     }
 

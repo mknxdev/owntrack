@@ -3,45 +3,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OwnTrack</title>
-    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5"></script>
-    <script>
-      window.dataLayer = window.dataLayer || []
-      function gtag() {
-        dataLayer.push(arguments)
-      }
-      gtag('js', new Date())
-      gtag('config', 'G-JSRE6N82F5')
-    </script> -->
     <script src="/dist/owntrack.js"></script>
     <script>
       const ot = OwnTrack({
         services: [
-          // {
-          //   name: 'fbpx',
-          //   label: 'Facebook Pixel',
-          //   trackingScriptUrl:
-          //     'https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5',
-          //   onInit: () => {
-          //     window.dataLayer = window.dataLayer || []
-          //     function gtag() {
-          //       dataLayer.push(arguments)
-          //     }
-          //     gtag('js', new Date())
-          //     gtag('config', 'G-JSRE6N82F5')
-          //   },
-          //   handlers: {
-          //     initFBPixel: () => {
-          //       console.log('fbpx.initFBPixel')},
-          //     sendEvent: () => {
-          //       console.log('fbpx.sendEvent')},
-          //   },
-          // },
           {
             name: 'ga',
             label: 'Google Analytics V4',
             type: 'Analytics',
             description: 'The Google all-in-one analytics tool.',
-            trackingScriptUrl:
+            scriptUrl:
               'https://www.googletagmanager.com/gtag/js?id=G-JSRE6N82F5',
             onInit: () => {
               window.dataLayer = window.dataLayer || []
@@ -53,22 +24,17 @@
             },
             handlers: {
               setDimensions: () => {
-                console.log('ga.setDimensions')
+                console.log('coucou ga.setDimensions')
               },
             },
           },
         ],
       })
-      // ot.service('ga').onReady(() => {
-      //   ot.service('ga').setDimensions()
-      // })
-      // ot.service('ga')
-      // console.log(ot.service('fbpx'));
       ot.service('ga').setDimensions()
       ot.service('ga').setDimensions()
       ot.service('ga').setDimensions()
-      console.log(ot);
-      console.log(window.dataLayer);
+      console.log(ot)
+      console.log(window.dataLayer)
     </script>
     <link rel="stylesheet" href="./dist/owntrack.css" />
   </head>

@@ -27,9 +27,10 @@ export default class TrackingGuard {
   _rcService: TrackingServiceContainer = {
     isEditable: false,
     name: '_rc',
-    description: 'This website uses some cookies needed for it to work. They cannot be disabled.',
+    description:
+      'This website uses some cookies needed for it to work. They cannot be disabled.',
     consent: { value: true, reviewed: true },
-    tsw: new TrackingService('_rc', 'Required cookies')
+    tsw: new TrackingService('_rc', 'Required cookies'),
   }
 
   constructor() {
@@ -40,36 +41,45 @@ export default class TrackingGuard {
     label,
     type,
     description,
-    trackingScriptUrl,
+    scriptUrl,
     onInit,
     handlers,
   }: ConfigService): TrackingServiceContainer {
-    this._initTaskQueue.push({ srv: name, handler: onInit, processed: false })
+    if (onInit)
+      this._initTaskQueue.push({ srv: name, handler: onInit, processed: false })
     const srv = new TrackingService(name, label)
-    for (const [fnName, fn] of Object.entries(handlers)) {
-      srv[fnName] = this._getWrappedTrackingFn(name, /* fnName, */ fn)
-    }
+    if (handlers)
+      for (const [fnName, fn] of Object.entries(handlers)) {
+        srv[fnName] = this._getWrappedTrackingFn(name, /* fnName, */ fn)
+      }
     this._services.push(srv)
     return {
       isEditable: true,
       name,
       type,
       description,
-      consent: { value: this.hasConsent(name), reviewed: this.isReviewed(name) },
+      consent: {
+        value: this.hasConsent(name),
+        reviewed: this.isReviewed(name),
+      },
       tsw: srv,
     }
   }
-  _getWrappedTrackingFn(srv: string, /* handlerName: string, */ handler: Function) {
+  _getWrappedTrackingFn(
+    srv: string,
+    /* handlerName: string, */ handler: Function,
+  ) {
     return () => {
       if (this.hasConsent(srv)) return handler()
-      else if (!this.isReviewed(srv)) this._tasksQueue.push({
-        srv,
-        handler,
-      })
+      else if (!this.isReviewed(srv))
+        this._tasksQueue.push({
+          srv,
+          handler,
+        })
     }
   }
   _execInitTaskQueue(): void {
-    this._initTaskQueue = this._initTaskQueue.filter(task => {
+    this._initTaskQueue = this._initTaskQueue.filter((task) => {
       if (this.hasConsent(task.srv) && !task.processed) {
         task.handler()
         task.processed = true
@@ -78,7 +88,7 @@ export default class TrackingGuard {
     })
   }
   _execTasksQueue(): void {
-    this._tasksQueue = this._tasksQueue.filter(task => {
+    this._tasksQueue = this._tasksQueue.filter((task) => {
       if (!this.isReviewed(task.srv)) return true
       if (this.hasConsent(task.srv)) task.handler()
       return false

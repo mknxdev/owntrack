@@ -5,7 +5,7 @@ export type ConfigService = {
   label?: string
   type?: string
   description?: string
-  trackingScriptUrl: string
+  scriptUrl: string
   onInit: Function
   handlers: object
 }

@@ -2,7 +2,7 @@ import { Config, TrackingServiceContainer } from './types'
 import TrackingGuard from './TrackingGuard'
 import DOMProxy from './DOMProxy'
 import TrackingService from './TrackingService'
-import { checkForValidServiceName } from './helpers/init'
+import { checkForValidServiceName } from './helpers/pApi'
 
 export default class OwnTrack {
   _trackingGuard: TrackingGuard = new TrackingGuard()
@@ -16,7 +16,7 @@ export default class OwnTrack {
     this._trackingGuard.init()
     this._dp.setServices([
       this._trackingGuard.getRCService(),
-      ...this._services
+      ...this._services,
     ])
     this._dp.init()
     window.addEventListener('DOMContentLoaded', () => {
@@ -25,7 +25,12 @@ export default class OwnTrack {
   }
 
   service(name: string): TrackingService {
-    if (checkForValidServiceName(name, this._services.map(s => s.name)))
-      return this._services.filter(s => s.name === name)[0].tsw
+    if (
+      checkForValidServiceName(
+        name,
+        this._services.map((s) => s.name),
+      )
+    )
+      return this._services.filter((s) => s.name === name)[0].tsw
   }
 }

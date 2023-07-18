@@ -1,5 +1,5 @@
 import { Config } from './types'
-import { checkForValidConfig } from './helpers/init'
+import { checkForValidConfig } from './helpers/pApi'
 import OwnTrack from './OwnTrack'
 import './css/ot.css'
 
