@@ -5,6 +5,7 @@
 - Allow user-defined setting (true/false) of "mandatory cookies" section
 - Integrate a locale system (fr, en) for predefined wordings
 - Allow user-defined OT storing system (LS, cookie) + data serialization
+- Provide a types export for TS-based hosting projects
 
 >>> P1
 
