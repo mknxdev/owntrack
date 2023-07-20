@@ -6,7 +6,9 @@
   "main": "dist/owntrack.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "rollup -c rollup.config.js -w"
+    "serve": "rollup -c rollup.config.js -w",
+    "build:dev": "rollup build -c rollup.config.dev.js",
+    "build:production": "rollup build -c rollup.config.production.js"
   },
   "repository": {
     "type": "git",
