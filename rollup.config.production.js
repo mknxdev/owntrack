@@ -1,4 +1,5 @@
 import typescript from '@rollup/plugin-typescript'
+import terser from '@rollup/plugin-terser'
 import css from 'rollup-plugin-import-css'
 
 export default {
@@ -13,13 +14,15 @@ export default {
       name: 'OwnTrack',
       file: 'dist/owntrack.min.js',
       format: 'umd',
+      plugins: [
+        terser({
+          compress: true,
+        }),
+      ]
     },
   ],
   plugins: [
     typescript(),
-    css({
-      output: 'owntrack.css',
-    }),
     css({
       output: 'owntrack.min.css',
     }),

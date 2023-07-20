@@ -5,20 +5,6 @@
     "module": "es2022",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "declaration": true,
-    "declarationDir": "types",
-    "paths": {
-      "@root/*": [
-        "./*"
-      ],
-      "@js/*": [
-        "./resources/js/*"
-      ],
-      "@css/*": [
-        "./resources/css/*"
-      ]
-    },
-    "types": ["vite/client"]
+    "esModuleInterop": true
   }
 }
