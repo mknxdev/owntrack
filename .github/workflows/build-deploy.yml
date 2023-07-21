@@ -31,6 +31,5 @@ jobs:
           name: ot-build
       - env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm set //registry.npmjs.org//:_authToken $NPM_TOKEN
-      - run: npm login
+        run: npm login
       # - run: npm publish
