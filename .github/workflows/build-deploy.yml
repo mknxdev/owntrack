@@ -21,6 +21,7 @@ jobs:
           name: ot-build
           path: dist/
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
