@@ -16,4 +16,16 @@ jobs:
           node-version: 18
       - run: npm ci
       - run: npm run build:production
-      # - run: npm publish
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ot-build
+          path: dist/
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: ot-build
+      - run: npm publish
