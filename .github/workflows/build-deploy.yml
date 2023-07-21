@@ -31,5 +31,4 @@ jobs:
           name: ot-build
       - env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm login
-      # - run: npm publish
+        run: npm publish
