@@ -1,0 +1,9 @@
+node_modules/
+public/
+.eslintrc
+.gitignore
+.prettierignore
+.prettierrc
+rollup.config.*
+TODO.*
+tsconfig.json
