@@ -1,7 +1,7 @@
 # <div align="center">OwnTrack</div>
 
 <div align="center">
-![Logo](https://github.com/mekkanix/owntrack/blob/main/logo.svg?raw=true width="150")
+  <img src="https://github.com/mekkanix/owntrack/blob/main/logo.svg?raw=true" width="150" alt="OwnTrack Logo">
 </div>
 
 ## Introduction
