@@ -23,8 +23,8 @@
                     if (config.services.filter((s) => s.name === srv.name).length > 1)
                         throw new Error(`OwnTrack: Service names must be unique.`);
                     // config.services.service[scriptUrl | onInit | handlers]
-                    if (!srv.scriptUrl && !srv.onInit && !srv.handlers)
-                        throw new Error(`OwnTrack: Service [${srv.name}]' must contain at least one of the following properties: scriptUrl, onInit, handlers.`);
+                    if (!srv.scripts && !srv.onInit && !srv.handlers)
+                        throw new Error(`OwnTrack: Service [${srv.name}]' must contain at least one of the following properties: scripts, onInit, handlers.`);
                     // config.services.service.label
                     if (srv.label && typeof srv.label !== 'string')
                         throw new Error(`OwnTrack: Service [${srv.name}]: 'label' must be a string.`);
@@ -34,9 +34,9 @@
                     // config.services.service.description
                     if (srv.description && typeof srv.description !== 'string')
                         throw new Error(`OwnTrack: Service [${srv.name}]: 'description' must be a string.`);
-                    // config.services.service.scriptUrl
-                    if (srv.scriptUrl && typeof srv.scriptUrl !== 'string')
-                        throw new Error(`OwnTrack: Service [${srv.name}]: 'scriptUrl' must be a string.`);
+                    // config.services.service.scripts
+                    if (srv.scripts && !Array.isArray(srv.scripts))
+                        throw new Error(`OwnTrack: Service [${srv.name}]: 'scripts' must be an array.`);
                     // config.services.service.onInit
                     if (srv.onInit && typeof srv.onInit !== 'function')
                         throw new Error(`OwnTrack: Service [${srv.name}]: 'onInit' must be a function.`);
@@ -185,14 +185,15 @@
             };
             this._consents = ls.getItem(LS_ITEM_NAME) || [];
         }
-        wrapService({ name, label, type, description, scriptUrl, onInit, handlers, }) {
-            if (scriptUrl)
-                this._scriptQueue.push({
-                    srv: name,
-                    url: scriptUrl,
-                    processed: false,
-                    attachedHandler: false,
-                });
+        wrapService({ name, label, type, description, scripts, onInit, handlers, }) {
+            if (scripts)
+                for (const script of scripts)
+                    this._scriptQueue.push({
+                        srv: name,
+                        url: script.url,
+                        processed: false,
+                        attachedHandler: false,
+                    });
             if (onInit)
                 this._initTaskQueue.push({ srv: name, handler: onInit, processed: false });
             const srv = new TrackingService(name, label);
@@ -234,7 +235,6 @@
                     const elScript = createScriptElmt(task.url);
                     elScript.addEventListener('load', () => {
                         task.processed = true;
-                        console.log(`[${task.srv}] script task done`);
                         this._execScriptTaskQueue();
                         this._execInitTaskQueue();
                         this._execTaskQueue();
@@ -249,14 +249,16 @@
         _execInitTaskQueue() {
             this._initTaskQueue = this._initTaskQueue
                 .map((task) => {
-                const hasScriptDep = this._scriptQueue.filter((s) => s.srv === task.srv);
-                const isScriptLoaded = hasScriptDep.length ? hasScriptDep[0].processed : true;
-                if (isScriptLoaded &&
+                const scriptsLoaded = this._scriptQueue.some((s) => s.srv === task.srv)
+                    ? this._scriptQueue
+                        .filter((s) => s.srv === task.srv)
+                        .every((s) => s.processed)
+                    : true;
+                if (scriptsLoaded &&
                     this.isReviewed(task.srv) &&
                     this.hasConsent(task.srv)) {
                     task.handler();
                     task.processed = true;
-                    console.log(`[${task.srv}] init task done`);
                     this._execTaskQueue();
                 }
                 return task;
@@ -266,17 +268,22 @@
         _execTaskQueue() {
             this._tasksQueue = this._tasksQueue
                 .map((task) => {
-                const hasScriptDep = this._scriptQueue.filter((s) => s.srv === task.srv);
-                const isScriptLoaded = hasScriptDep.length ? hasScriptDep[0].processed : true;
-                const hasInitDep = this._initTaskQueue.filter((s) => s.srv === task.srv);
-                const isInitDone = hasInitDep.length ? hasInitDep[0].processed : true;
-                if (isScriptLoaded &&
-                    isInitDone &&
+                const scriptsLoaded = this._scriptQueue.some((s) => s.srv === task.srv)
+                    ? this._scriptQueue
+                        .filter((s) => s.srv === task.srv)
+                        .every((s) => s.processed)
+                    : true;
+                const initScriptsFinished = this._initTaskQueue.some((s) => s.srv === task.srv)
+                    ? this._initTaskQueue
+                        .filter((s) => s.srv === task.srv)
+                        .every((s) => s.processed)
+                    : true;
+                if (scriptsLoaded &&
+                    initScriptsFinished &&
                     this.isReviewed(task.srv) &&
                     this.hasConsent(task.srv)) {
                     task.handler(...task.args);
                     task.processed = true;
-                    console.log(`[${task.srv}] task done`);
                 }
                 return task;
             })
