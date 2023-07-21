@@ -22,9 +22,9 @@ export const checkForValidConfig = (config: Config): boolean => {
         if (config.services.filter((s) => s.name === srv.name).length > 1)
           throw new Error(`OwnTrack: Service names must be unique.`)
         // config.services.service[scriptUrl | onInit | handlers]
-        if (!srv.scriptUrl && !srv.onInit && !srv.handlers)
+        if (!srv.scripts && !srv.onInit && !srv.handlers)
           throw new Error(
-            `OwnTrack: Service [${srv.name}]' must contain at least one of the following properties: scriptUrl, onInit, handlers.`,
+            `OwnTrack: Service [${srv.name}]' must contain at least one of the following properties: scripts, onInit, handlers.`,
           )
         // config.services.service.label
         if (srv.label && typeof srv.label !== 'string')
@@ -41,10 +41,10 @@ export const checkForValidConfig = (config: Config): boolean => {
           throw new Error(
             `OwnTrack: Service [${srv.name}]: 'description' must be a string.`,
           )
-        // config.services.service.scriptUrl
-        if (srv.scriptUrl && typeof srv.scriptUrl !== 'string')
+        // config.services.service.scripts
+        if (srv.scripts && !Array.isArray(srv.scripts))
           throw new Error(
-            `OwnTrack: Service [${srv.name}]: 'scriptUrl' must be a string.`,
+            `OwnTrack: Service [${srv.name}]: 'scripts' must be an array.`,
           )
         // config.services.service.onInit
         if (srv.onInit && typeof srv.onInit !== 'function')

@@ -51,17 +51,18 @@ export default class TrackingGuard {
     label,
     type,
     description,
-    scriptUrl,
+    scripts,
     onInit,
     handlers,
   }: ConfigService): TrackingServiceContainer {
-    if (scriptUrl)
-      this._scriptQueue.push({
-        srv: name,
-        url: scriptUrl,
-        processed: false,
-        attachedHandler: false,
-      })
+    if (scripts)
+      for (const script of scripts)
+        this._scriptQueue.push({
+          srv: name,
+          url: script.url,
+          processed: false,
+          attachedHandler: false,
+        })
     if (onInit)
       this._initTaskQueue.push({ srv: name, handler: onInit, processed: false })
     const srv = new TrackingService(name, label)
@@ -120,10 +121,13 @@ export default class TrackingGuard {
   _execInitTaskQueue(): void {
     this._initTaskQueue = this._initTaskQueue
       .map((task) => {
-        const hasScriptDep = this._scriptQueue.filter((s) => s.srv === task.srv)
-        const isScriptLoaded = hasScriptDep.length ? hasScriptDep[0].processed : true
+        const scriptsLoaded = this._scriptQueue.some((s) => s.srv === task.srv)
+          ? this._scriptQueue
+              .filter((s) => s.srv === task.srv)
+              .every((s) => s.processed)
+          : true
         if (
-          isScriptLoaded &&
+          scriptsLoaded &&
           this.isReviewed(task.srv) &&
           this.hasConsent(task.srv)
         ) {
@@ -139,13 +143,21 @@ export default class TrackingGuard {
   _execTaskQueue(): void {
     this._tasksQueue = this._tasksQueue
       .map((task) => {
-        const hasScriptDep = this._scriptQueue.filter((s) => s.srv === task.srv)
-        const isScriptLoaded = hasScriptDep.length ? hasScriptDep[0].processed : true
-        const hasInitDep = this._initTaskQueue.filter((s) => s.srv === task.srv)
-        const isInitDone = hasInitDep.length ? hasInitDep[0].processed : true
+        const scriptsLoaded = this._scriptQueue.some((s) => s.srv === task.srv)
+          ? this._scriptQueue
+              .filter((s) => s.srv === task.srv)
+              .every((s) => s.processed)
+          : true
+        const initScriptsFinished = this._initTaskQueue.some(
+          (s) => s.srv === task.srv,
+        )
+          ? this._initTaskQueue
+              .filter((s) => s.srv === task.srv)
+              .every((s) => s.processed)
+          : true
         if (
-          isScriptLoaded &&
-          isInitDone &&
+          scriptsLoaded &&
+          initScriptsFinished &&
           this.isReviewed(task.srv) &&
           this.hasConsent(task.srv)
         ) {
