@@ -17,3 +17,11 @@ Soon.
 ## Documentation
 
 Complete step-by-step guides & documentation are available [here](https://docs.mekkanix.net/owntrack/#/).
+
+## Licensing
+
+Released under the [MIT](https://opensource.org/licenses/MIT) license.
+
+## Contribute
+
+Soon.
