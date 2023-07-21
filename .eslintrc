@@ -8,7 +8,6 @@
   "plugins": ["prettier"],
   "rules": {
     "eqeqeq": ["warn", "always"],
-    // TS-specific
     "@typescript-eslint/ban-ts-comment": "off"
   },
   "parserOptions": {
@@ -18,4 +17,3 @@
     "__dirname": true
   }
 }
-
