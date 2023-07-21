@@ -1,8 +1,6 @@
 import { TrackingServiceContainer } from './types'
 import { createElmt, generateIconElement, getLogoElement } from './helpers/ui'
-import {
-  findElementChildByAttr as findChildByAttr,
-} from './helpers/dom'
+import { findElementChildByAttr as findChildByAttr } from './helpers/dom'
 import TrackingGuard from './TrackingGuard'
 
 export default class DOMProxy {
@@ -12,7 +10,14 @@ export default class DOMProxy {
   _manualOpen = false
   _entryDisplayed = false
   _settingsDisplayed = false
-  _d: { r: Element; tr: Element; er: Element; sr: Element; sc: Element; srvr: Element } = {
+  _d: {
+    r: Element
+    tr: Element
+    er: Element
+    sr: Element
+    sc: Element
+    srvr: Element
+  } = {
     r: createElmt('div'), // root
     tr: createElmt('div'), // trigger root
     er: createElmt('div'), // entry root
