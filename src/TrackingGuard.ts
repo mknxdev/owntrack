@@ -106,7 +106,6 @@ export default class TrackingGuard {
           const elScript = createScriptElmt(task.url)
           elScript.addEventListener('load', () => {
             task.processed = true
-            console.log(`[${task.srv}] script task done`)
             this._execScriptTaskQueue()
             this._execInitTaskQueue()
             this._execTaskQueue()
@@ -133,7 +132,6 @@ export default class TrackingGuard {
         ) {
           task.handler()
           task.processed = true
-          console.log(`[${task.srv}] init task done`)
           this._execTaskQueue()
         }
         return task
@@ -163,7 +161,6 @@ export default class TrackingGuard {
         ) {
           task.handler(...task.args)
           task.processed = true
-          console.log(`[${task.srv}] task done`)
         }
         return task
       })
