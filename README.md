@@ -1,6 +1,6 @@
 # <div align="center">OwnTrack</div>
 
-<div align="center">![logo](./logo.svg)</div>
+![Logo](https://github.com/mekkanix/owntrack/blob/main/logo.svg?raw=true)
 
 ## Introduction
 
