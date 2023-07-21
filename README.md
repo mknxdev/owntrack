@@ -1,6 +1,8 @@
 # <div align="center">OwnTrack</div>
 
-![Logo](https://github.com/mekkanix/owntrack/blob/main/logo.svg?raw=true)
+<div align="center">
+![Logo](https://github.com/mekkanix/owntrack/blob/main/logo.svg?raw=true width="150")
+</div>
 
 ## Introduction
 
