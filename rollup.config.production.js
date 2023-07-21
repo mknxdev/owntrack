@@ -18,13 +18,14 @@ export default {
         terser({
           compress: true,
         }),
-      ]
+      ],
     },
   ],
   plugins: [
     typescript(),
     css({
       output: 'owntrack.min.css',
+      minify: true,
     }),
   ],
 }
