@@ -29,4 +29,6 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: ot-build
-      - run: npm publish
+      - run: npm set //registry.npmjs.org//:_authToken $NPM_TOKEN
+      - run: npm login
+      # - run: npm publish
