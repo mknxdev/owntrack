@@ -88,7 +88,19 @@ export const checkForValidConfig = (config: Config): boolean => {
 export const fillDefaultValues = (config: Config): Config => {
   return {
     enableRequiredCookies: config.enableRequiredCookies || true,
-    services: config.services,
+    services: config.services.map((s) => ({
+      name: s.name,
+      label: s.label || undefined,
+      type: s.type || undefined,
+      description: s.description || undefined,
+      scripts: s.scripts
+        ? s.scripts.map((sc) => ({
+            url: sc.url,
+          }))
+        : undefined,
+      onInit: s.onInit || undefined,
+      handlers: s.handlers || undefined,
+    })),
   }
 }
 

@@ -5,7 +5,7 @@
   "main": "dist/owntrack.min.js",
   "scripts": {
     "test": "jest -u -c jest.config.ts",
-    "serve": "rollup -c rollup.config.dev.js -w",
+    "serve": "rollup -c rollup.config.dev.js -w --bundleConfigAsCjs",
     "build:dev": "rollup -c rollup.config.dev.js",
     "build:production": "rollup -c rollup.config.production.js --bundleConfigAsCjs"
   },

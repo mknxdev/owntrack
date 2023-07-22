@@ -1,6 +1,9 @@
 import { expect, jest, test } from '@jest/globals'
 import { Config as Cfg } from '@src/types'
-import { checkForValidConfig as checkConfig } from '@src/helpers/pApi'
+import {
+  checkForValidConfig as checkConfig,
+  fillDefaultValues as fillDefault,
+} from '@src/helpers/pApi'
 
 global.global.console.error = jest.fn()
 const cslError = jest
@@ -366,5 +369,93 @@ describe('helpers.pApi.checkForValidConfig', () => {
       expect(checkConfig(config6 as unknown as Cfg)).toBe(false),
     ]
     expect(global.console.error).toHaveBeenCalledTimes(tests.length)
+  })
+})
+
+describe('helpers.pApi.fillDefaultValues', () => {
+  // VALID
+
+  test('all empty values', () => {
+    const config1: Cfg = {
+      services: [{ name: 'ga', scripts: [{ url: 'url' }] }],
+    }
+    const config2: Cfg = {
+      services: [{ name: 'ga', onInit: () => {} }],
+    }
+    const config3: Cfg = {
+      services: [{ name: 'ga', handlers: { trackingFn: () => {} } }],
+    }
+    expect(fillDefault(config1)).toEqual({
+      enableRequiredCookies: true,
+      services: [
+        {
+          name: config1.services[0].name,
+          label: undefined,
+          type: undefined,
+          description: undefined,
+          scripts: config1.services[0].scripts,
+          onInit: undefined,
+          handlers: undefined,
+        },
+      ],
+    })
+    expect(fillDefault(config2)).toEqual({
+      enableRequiredCookies: true,
+      services: [
+        {
+          name: config2.services[0].name,
+          label: undefined,
+          type: undefined,
+          description: undefined,
+          scripts: undefined,
+          onInit: config2.services[0].onInit,
+          handlers: undefined,
+        },
+      ],
+    })
+    expect(fillDefault(config3)).toEqual({
+      enableRequiredCookies: true,
+      services: [
+        {
+          name: config3.services[0].name,
+          label: undefined,
+          type: undefined,
+          description: undefined,
+          scripts: undefined,
+          onInit: undefined,
+          handlers: config3.services[0].handlers,
+        },
+      ],
+    })
+  })
+
+  test('all filled values', () => {
+    const config1: Cfg = {
+      enableRequiredCookies: true,
+      services: [
+        {
+          name: 'ga',
+          label: 'Google Analytics',
+          type: 'Analytics',
+          description: 'Google Analytics tool.',
+          scripts: [{ url: 'url' }],
+          onInit: () => {},
+          handlers: {
+            trackingFn: () => {},
+          },
+        },
+      ],
+    }
+    expect(fillDefault(config1)).toEqual(config1)
+  })
+
+  test('optional field (enableRequiredCookies)', () => {
+    const config1: Cfg = {
+      services: [{ name: 'ga', onInit: () => {} }],
+    }
+    expect(fillDefault(config1)).toEqual({
+      enableRequiredCookies: true,
+      ...config1,
+    })
   })
 })
