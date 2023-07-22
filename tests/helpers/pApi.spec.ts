@@ -42,9 +42,7 @@ describe('helpers.pApi.checkForValidConfig', () => {
       services: [
         {
           name: 'ga',
-          handlers: {
-            trackingFn: () => {},
-          },
+          handlers: { trackingFn: () => {} },
         },
       ],
     }
@@ -56,9 +54,7 @@ describe('helpers.pApi.checkForValidConfig', () => {
             { url: 'https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX' },
           ],
           onInit: () => {},
-          handlers: {
-            trackingFn: () => {},
-          },
+          handlers: { trackingFn: () => {} },
         },
       ],
     }
@@ -98,13 +94,13 @@ describe('helpers.pApi.checkForValidConfig', () => {
     expect(checkForValidConfig(config7)).toBe(true)
   })
 
-  test('invalid config payloads (global)', () => {
+  test('invalid config (enableRequiredCookies)', () => {
     const config1 = {}
     const config2 = { enableRequiredCookies: 'invalid', services: [] }
     const config3 = { enableRequiredCookies: 42, services: [] }
     const config4 = { enableRequiredCookies: [], services: [] }
     const config5 = { enableRequiredCookies: {}, services: [] }
-    const config6 = { enableRequiredCookies: {}, services: [] }
+    const config6 = { enableRequiredCookies: () => {}, services: [] }
     expect(checkForValidConfig(config1 as unknown as Config)).toBe(false)
     expect(checkForValidConfig(config2 as unknown as Config)).toBe(false)
     expect(checkForValidConfig(config3 as unknown as Config)).toBe(false)
@@ -114,21 +110,89 @@ describe('helpers.pApi.checkForValidConfig', () => {
     expect(global.console.error).toHaveBeenCalledTimes(6)
   })
 
-  test('invalid config payloads (services)', () => {
+  test('invalid config (services)', () => {
     const config1 = { services: [{}] }
-    const config2 = {
-      services: [{ label: 'Google Analytics' }],
-    }
-    const config3 = {
-      services: [{ type: 'Analytics' }],
-    }
-    const config4 = {
-      services: [{ description: 'Google analytics tool.' }],
-    }
+    expect(checkForValidConfig(config1 as unknown as Config)).toBe(false)
+    expect(global.console.error).toHaveBeenCalledTimes(1)
+  })
+
+  test('invalid config (services.service.name)', () => {
+    const config1 = { services: [{ name: true }] }
+    const config2 = { services: [{ name: 42 }] }
+    const config3 = { services: [{ name: {} }] }
+    const config4 = { services: [{ name: [] }] }
+    const config5 = { services: [{ name: () => {} }] }
     expect(checkForValidConfig(config1 as unknown as Config)).toBe(false)
     expect(checkForValidConfig(config2 as unknown as Config)).toBe(false)
     expect(checkForValidConfig(config3 as unknown as Config)).toBe(false)
     expect(checkForValidConfig(config4 as unknown as Config)).toBe(false)
-    expect(global.console.error).toHaveBeenCalledTimes(4)
+    expect(checkForValidConfig(config5 as unknown as Config)).toBe(false)
+    expect(global.console.error).toHaveBeenCalledTimes(5)
+  })
+
+  test('invalid config (services.service.label)', () => {
+    const config1 = { services: [{ label: true }] }
+    const config2 = { services: [{ label: 42 }] }
+    const config3 = { services: [{ label: {} }] }
+    const config4 = { services: [{ label: [] }] }
+    const config5 = { services: [{ label: () => {} }] }
+    expect(checkForValidConfig(config1 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config2 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config3 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config4 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config5 as unknown as Config)).toBe(false)
+    expect(global.console.error).toHaveBeenCalledTimes(5)
+  })
+
+  test('invalid config (services.service.type)', () => {
+    const config1 = { services: [{ type: true }] }
+    const config2 = { services: [{ type: 42 }] }
+    const config3 = { services: [{ type: {} }] }
+    const config4 = { services: [{ type: [] }] }
+    const config5 = { services: [{ type: () => {} }] }
+    expect(checkForValidConfig(config1 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config2 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config3 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config4 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config5 as unknown as Config)).toBe(false)
+    expect(global.console.error).toHaveBeenCalledTimes(5)
+  })
+
+  test('invalid config (services.service.description)', () => {
+    const config1 = { services: [{ description: true }] }
+    const config2 = { services: [{ description: 42 }] }
+    const config3 = { services: [{ description: {} }] }
+    const config4 = { services: [{ description: [] }] }
+    const config5 = { services: [{ description: () => {} }] }
+    expect(checkForValidConfig(config1 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config2 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config3 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config4 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config5 as unknown as Config)).toBe(false)
+    expect(global.console.error).toHaveBeenCalledTimes(5)
+  })
+
+  test('invalid config (services.service.scripts)', () => {
+    const config1 = { services: [{ scripts: 'invalid' }] }
+    const config2 = { services: [{ scripts: 42 }] }
+    const config3 = { services: [{ scripts: true }] }
+    const config4 = { services: [{ scripts: {} }] }
+    const config5 = { services: [{ scripts: () => {} }] }
+    expect(checkForValidConfig(config1 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config2 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config3 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config4 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config5 as unknown as Config)).toBe(false)
+    expect(global.console.error).toHaveBeenCalledTimes(5)
+  })
+
+  test('invalid config (services.service.onInit)', () => {
+    const config1 = { services: [{ onInit: 'invalid' }] }
+    const config2 = { services: [{ onInit: 42 }] }
+    const config3 = { services: [{ onInit: true }] }
+    expect(checkForValidConfig(config1 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config2 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config3 as unknown as Config)).toBe(false)
+    expect(global.console.error).toHaveBeenCalledTimes(3)
   })
 })
