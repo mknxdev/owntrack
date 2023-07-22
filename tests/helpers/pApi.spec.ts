@@ -1,4 +1,4 @@
-import { expect, jest, test } from '@jest/globals'
+import { jest, test, expect } from '@jest/globals'
 import { Config as Cfg } from '@src/types'
 import {
   checkForValidConfig as checkConfig,

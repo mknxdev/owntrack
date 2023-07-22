@@ -6,6 +6,7 @@
 - Allow user-defined OT storing system (LS, cookie) + data serialization
 - Provide a types export for TS-based hosting projects
 - Provide a public API for user manipulation (managing services, mounting...)
+- Fine-grained management of 3rd cookies
 
 >>> P1
 
