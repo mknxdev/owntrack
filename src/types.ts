@@ -10,6 +10,7 @@ export type ConfigService = {
   handlers: object
 }
 export type Config = {
+  enableRequiredCookies: boolean
   services: ConfigService[]
 }
 export type Consent = {

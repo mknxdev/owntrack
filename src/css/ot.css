@@ -299,10 +299,13 @@
 .ot-root .ot-settings .ot-settings__cp {
   position: absolute;
   right: 10px;
-  bottom: -18px;
+  bottom: -16px;
+  padding: 3px 6px;
   display: flex;
   align-items: center;
   font-size: 10px;
+  background-color: rgba(255,255,255,0.45);
+  border-radius: 0 0 4px 4px;
 }
 .ot-root .ot-settings .ot-settings__cp-info {
   padding: 0 6px 0 0;

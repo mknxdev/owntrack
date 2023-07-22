@@ -7,6 +7,9 @@ export const checkForValidConfig = (config: Config): boolean => {
       throw new Error(
         'OwnTrack: A configuration object is required at first call.',
       )
+    // config.enableRequiredCookies
+    if (config.enableRequiredCookies && typeof config.enableRequiredCookies !== 'boolean')
+      throw new Error(`OwnTrack: 'enableRequiredCookies' must be a boolean.`)
     // config.services
     if (!config.services) throw new Error(`OwnTrack: 'services' is required.`)
     if (!Array.isArray(config.services))
@@ -70,6 +73,12 @@ export const checkForValidConfig = (config: Config): boolean => {
     return false
   }
   return true
+}
+
+export const fillDefaultValues = (config: Config): Config => {
+  return {
+    enableRequiredCookies: config.enableRequiredCookies || true,
+  }
 }
 
 export const checkForValidServiceName = (name: string, services: string[]) => {
