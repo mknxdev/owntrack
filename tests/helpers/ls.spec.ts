@@ -29,27 +29,31 @@ afterEach(() => {
 
 describe('helpers.ls.setItem', () => {
   test('valid processing', () => {
-    setItem('test_item', 'test_value')
-    expect(getItem('test_item')).toBeTruthy()
-    expect(getItem('test_item')).toBe('test_value')
+    setItem('item', 'test_value')
+    expect(getItem('item')).toBeTruthy()
+    expect(getItem('item')).toBe('test_value')
   })
 })
 
 describe('helpers.ls.getItem', () => {
   test('valid processing', () => {
-    setItem('test_item1', 'test_value1')
-    setItem('test_item2', 'test_value2')
-    expect(getItem('test_item1')).toBeTruthy()
-    expect(getItem('test_item1')).toBe('test_value1')
-    expect(getItem('test_item2')).toBeTruthy()
-    expect(getItem('test_item2')).toBe('test_value2')
+    setItem('item1', 'test_value1')
+    setItem('item2', true)
+    setItem('item3', 42)
+    setItem('item4', [42, 'value', true])
+    setItem('item5', { test: 'test_value' })
+    expect(getItem('item1')).toBe('test_value1')
+    expect(getItem('item2')).toBe(true)
+    expect(getItem('item3')).toBe(42)
+    expect(getItem('item4')).toEqual([42, 'value', true])
+    expect(getItem('item5')).toEqual({ test: 'test_value' })
   })
 })
 
 describe('helpers.ls.removeItem', () => {
   test('valid processing', () => {
-    setItem('test_item', 'test_value')
-    removeItem('test_item')
-    expect(getItem('test_item')).toBeFalsy()
+    setItem('item', 'test_value')
+    removeItem('item')
+    expect(getItem('item')).toBeFalsy()
   })
 })
