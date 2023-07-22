@@ -5,12 +5,12 @@ export type ConfigService = {
   label?: string
   type?: string
   description?: string
-  scripts: { url: string }[]
-  onInit: Function
-  handlers: object
+  scripts?: { url: string }[]
+  onInit?: Function
+  handlers?: object
 }
 export type Config = {
-  enableRequiredCookies: boolean
+  enableRequiredCookies?: boolean
   services: ConfigService[]
 }
 export type Consent = {
