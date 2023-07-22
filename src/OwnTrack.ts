@@ -2,7 +2,7 @@ import { Config, TrackingServiceContainer } from './types'
 import TrackingGuard from './TrackingGuard'
 import DOMProxy from './DOMProxy'
 import TrackingService from './TrackingService'
-import { checkForValidServiceName } from './helpers/pApi'
+import { checkForValidServiceName, fillDefaultValues } from './helpers/pApi'
 
 export default class OwnTrack {
   _trackingGuard: TrackingGuard = new TrackingGuard()
@@ -10,14 +10,15 @@ export default class OwnTrack {
   _dp: DOMProxy = new DOMProxy(this._trackingGuard)
 
   constructor(config: Config) {
-    for (const service of config.services)
+    const fmtConfig = Object.assign({}, fillDefaultValues(config))
+    for (const service of fmtConfig.services)
       this._services.push(this._trackingGuard.wrapService(service))
     this._trackingGuard.store()
     this._trackingGuard.init()
-    this._dp.setServices([
-      this._trackingGuard.getRCService(),
-      ...this._services,
-    ])
+    let services = []
+    if (config.enableRequiredCookies)
+      services.push(this._trackingGuard.getRCService())
+    this._dp.setServices(services.concat(this._services))
     this._dp.init()
     window.addEventListener('DOMContentLoaded', () => {
       this._dp.mount()
@@ -32,5 +33,6 @@ export default class OwnTrack {
       )
     )
       return this._services.filter((s) => s.name === name)[0].ts
+    return
   }
 }

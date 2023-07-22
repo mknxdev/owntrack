@@ -367,10 +367,6 @@ export default class DOMProxy {
     if (srv.consent.value) return 'Allowed'
     return 'Denied'
   }
-  mount(): void {
-    this._render()
-    document.body.append(this._d.r)
-  }
   setServices(services: TrackingServiceContainer[]): void {
     this._services = services
   }
@@ -384,5 +380,9 @@ export default class DOMProxy {
     this._initSettingsHeader()
     this._initSettingsServices()
     this._initSettingsFooter()
+  }
+  mount(): void {
+    this._render()
+    document.body.append(this._d.r)
   }
 }

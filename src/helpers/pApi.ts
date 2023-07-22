@@ -78,6 +78,7 @@ export const checkForValidConfig = (config: Config): boolean => {
 export const fillDefaultValues = (config: Config): Config => {
   return {
     enableRequiredCookies: config.enableRequiredCookies || true,
+    services: config.services,
   }
 }
 
