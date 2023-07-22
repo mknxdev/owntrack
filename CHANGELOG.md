@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-<!-- ## [1.0.0-beta.2] - 2023-07-21
+## [1.0.0-beta.2] - 2023-07-21
 
-- Second beta version -->
+### Added
+
+- `enableRequiredCookies` conf option allowing  user to (de)activate RC service
 
 ## [1.0.0-beta.1] - 2023-07-21
 
