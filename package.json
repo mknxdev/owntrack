@@ -1,6 +1,6 @@
 {
   "name": "owntrack",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "A modern GDPR-compliant user-tracking protection guard that focuses on compatibility and flexibility.",
   "main": "dist/owntrack.min.js",
   "scripts": {
