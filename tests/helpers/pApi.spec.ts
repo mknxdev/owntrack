@@ -2,11 +2,23 @@ import { expect, jest, test } from '@jest/globals'
 import { checkForValidConfig } from '@src/helpers/pApi'
 import { Config } from '@src/types'
 
-beforeAll(() => {
-  jest.spyOn(global.console, 'error').mockImplementation(() => {})
+global.global.console.error = jest.fn()
+const cslError = jest
+  .spyOn(global.console, 'error')
+  .mockImplementation(() => {})
+
+afterEach(() => {
+  cslError.mockClear()
 })
 
 describe('helpers.pApi.checkForValidConfig', () => {
+  test('valid config payloads (global)', () => {
+    const config1: Config = { enableRequiredCookies: true, services: [] }
+    const config2: Config = { enableRequiredCookies: false, services: [] }
+    expect(checkForValidConfig(config1)).toBe(true)
+    expect(checkForValidConfig(config2)).toBe(true)
+  })
+
   test('valid config payloads (services)', () => {
     const config1: Config = {
       services: [
@@ -86,23 +98,37 @@ describe('helpers.pApi.checkForValidConfig', () => {
     expect(checkForValidConfig(config7)).toBe(true)
   })
 
-  test('valid config payloads (optional fields)', () => {
-    const config1: Config = { enableRequiredCookies: true, services: [] }
-    const config2: Config = { enableRequiredCookies: false, services: [] }
-    expect(checkForValidConfig(config1)).toBe(true)
-    expect(checkForValidConfig(config2)).toBe(true)
-  })
-
-  test('invalid config payloads (services)', () => {
-    // @ts-ignore
-    const config1 = { enableRequiredCookies: 'invalid', services: [] }
-    const config2 = { enableRequiredCookies: 42, services: [] }
-    const config3 = { enableRequiredCookies: [], services: [] }
-    const config4 = { enableRequiredCookies: {}, services: [] }
+  test('invalid config payloads (global)', () => {
+    const config1 = {}
+    const config2 = { enableRequiredCookies: 'invalid', services: [] }
+    const config3 = { enableRequiredCookies: 42, services: [] }
+    const config4 = { enableRequiredCookies: [], services: [] }
+    const config5 = { enableRequiredCookies: {}, services: [] }
+    const config6 = { enableRequiredCookies: {}, services: [] }
     expect(checkForValidConfig(config1 as unknown as Config)).toBe(false)
     expect(checkForValidConfig(config2 as unknown as Config)).toBe(false)
     expect(checkForValidConfig(config3 as unknown as Config)).toBe(false)
     expect(checkForValidConfig(config4 as unknown as Config)).toBe(false)
-    expect(console.error).toHaveBeenCalledTimes(4)
+    expect(checkForValidConfig(config5 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config6 as unknown as Config)).toBe(false)
+    expect(global.console.error).toHaveBeenCalledTimes(6)
+  })
+
+  test('invalid config payloads (services)', () => {
+    const config1 = { services: [{}] }
+    const config2 = {
+      services: [{ label: 'Google Analytics' }],
+    }
+    const config3 = {
+      services: [{ type: 'Analytics' }],
+    }
+    const config4 = {
+      services: [{ description: 'Google analytics tool.' }],
+    }
+    expect(checkForValidConfig(config1 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config2 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config3 as unknown as Config)).toBe(false)
+    expect(checkForValidConfig(config4 as unknown as Config)).toBe(false)
+    expect(global.console.error).toHaveBeenCalledTimes(4)
   })
 })

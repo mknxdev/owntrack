@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `enableRequiredCookies` conf option allowing  user to (de)activate RC service
+- `enableRequiredCookies` conf option allowing user to (de)activate RC service
+- Some tests for `pApi` helper
 
 ## [1.0.0-beta.1] - 2023-07-21
 
