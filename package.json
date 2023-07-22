@@ -4,7 +4,8 @@
   "description": "A modern GDPR-compliant user-tracking protection guard that focuses on compatibility and flexibility.",
   "main": "dist/owntrack.min.js",
   "scripts": {
-    "test": "jest -u -c jest.config.ts",
+    "test": "jest -u -c jest.config.ts --verbose",
+    "ci-test": "jest -u -c jest.config.ts",
     "serve": "rollup -c rollup.config.dev.js -w --bundleConfigAsCjs",
     "build:dev": "rollup -c rollup.config.dev.js",
     "build:production": "rollup -c rollup.config.production.js --bundleConfigAsCjs"
@@ -31,6 +32,8 @@
     "eslint-plugin-prettier": "^5.0.0",
     "install": "^0.13.0",
     "jest": "^29.6.1",
+    "jest-environment-jsdom": "^29.6.1",
+    "jsdom": "^22.1.0",
     "prettier": "^3.0.0",
     "prettier-eslint": "^15.0.1",
     "rollup-plugin-import-css": "^3.3.1",
