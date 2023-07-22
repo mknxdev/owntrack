@@ -2,6 +2,7 @@ import { expect, jest, test } from '@jest/globals'
 import { Config as Cfg } from '@src/types'
 import {
   checkForValidConfig as checkConfig,
+  checkForValidServiceName as checkServiceName,
   fillDefaultValues as fillDefault,
 } from '@src/helpers/pApi'
 
@@ -373,8 +374,6 @@ describe('helpers.pApi.checkForValidConfig', () => {
 })
 
 describe('helpers.pApi.fillDefaultValues', () => {
-  // VALID
-
   test('all empty values', () => {
     const config1: Cfg = {
       services: [{ name: 'ga', scripts: [{ url: 'url' }] }],
@@ -457,5 +456,18 @@ describe('helpers.pApi.fillDefaultValues', () => {
       enableRequiredCookies: true,
       ...config1,
     })
+  })
+})
+
+describe('helpers.pApi.checkForValidServiceName', () => {
+  test('valid service name', () => {
+    const registered = ['ga', 'hotjar']
+    expect(checkServiceName('ga', registered)).toBe(true)
+  })
+
+  test('invalid service name', () => {
+    const registered = ['ga', 'hotjar']
+    const tests = [expect(checkServiceName('matomo', registered)).toBe(false)]
+    expect(global.console.error).toHaveBeenCalledTimes(tests.length)
   })
 })
