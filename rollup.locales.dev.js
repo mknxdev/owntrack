@@ -25,7 +25,8 @@ export default {
         }
       },
       generateBundle(_, bundle) {
-        for (const entry of Object.values(bundle)) {
+        const od = []
+        for (const [key, entry] of Object.entries(bundle)) {
           let payload = entry.code
             .substring(
               entry.code.indexOf('"{') + 1,
@@ -37,6 +38,10 @@ export default {
             fileName: `${entry.name}.json`,
             source: payload,
           })
+          od.push(key)
+        }
+        for (const o of od) {
+          delete bundle[o]
         }
       },
     },
