@@ -1,6 +1,7 @@
 import typescript from '@rollup/plugin-typescript'
 import terser from '@rollup/plugin-terser'
 import css from 'rollup-plugin-import-css'
+import yaml from '@rollup/plugin-yaml'
 
 export default {
   input: 'src/index.ts',
@@ -27,5 +28,6 @@ export default {
       output: 'owntrack.min.css',
       minify: true,
     }),
+    yaml(),
   ],
 }
