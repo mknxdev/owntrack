@@ -1,0 +1,13 @@
+buttons:
+  allow: Allow
+  deny: Deny
+  global_allow: Allow all
+  global_deny: Deny all
+  settings: Settings
+entry:
+  notice: This website uses cookies & analytics for tracking and/or advertising purposes. You can choose to accept them or not.
+settings:
+  title: Tracking Settings
+  notice: Here you can manage tracking/analytics acceptance for each service.<br />You can also accept or deny tracking for all services at once.
+credits:
+  powered_by: Powered by OwnTracl
