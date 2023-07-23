@@ -22,8 +22,8 @@ export type TrackingServiceConsent = {
 // Locales
 export type LocaleDefinition = {}
 export type Locales = {
-  en: LocaleDefinition
-  fr: LocaleDefinition
+  en?: LocaleDefinition
+  fr?: LocaleDefinition
 }
 
 // User Config

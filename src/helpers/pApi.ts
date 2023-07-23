@@ -108,12 +108,14 @@ export const checkForValidConfig = (config: Config): boolean => {
 export const fillDefaultValues = (
   config: Config,
   locales: LocaleDefinition = undefined,
+  defaultLocales: LocaleDefinition = undefined,
 ): Config => {
   return {
     enableRequiredCookies:
       config.enableRequiredCookies !== undefined
         ? config.enableRequiredCookies
         : true,
+    locales: locales || defaultLocales,
     services: config.services.map((s) => ({
       name: s.name,
       label: s.label || undefined,
