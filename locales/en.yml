@@ -1,3 +1,7 @@
+states:
+  pending: Pending
+  allowed: Allowed
+  denied: Denied
 buttons:
   allow: Allow
   deny: Deny
@@ -9,5 +13,5 @@ entry:
 settings:
   title: Tracking Settings
   notice: Here you can manage tracking/analytics acceptance for each service.<br />You can also accept or deny tracking for all services at once.
-credits:
-  powered_by: Powered by OwnTracl
+headline: Tracking<br />Protection
+credits: Powered by OwnTrack

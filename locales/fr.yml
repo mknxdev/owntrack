@@ -1,0 +1,17 @@
+states:
+  pending: En attente
+  allowed: Autorisé
+  denied: Refusé
+buttons:
+  allow: Autoriser
+  deny: Refuser
+  global_allow: Autoriser tout
+  global_deny: Refuser tout
+  settings: Paramètres
+entry:
+  notice: Ce site web utilise des cookies & analyses dans un but de suivi et/ou de ciblage publicitaire. Vous pouvez choisir de les accepter ou non.
+settings:
+  title: Paramètres de suivi
+  notice: Here you can manage tracking/analytics acceptance for each service.<br />You can also accept or deny tracking for all services at once.
+headline: Protection<br />de suivi
+credits: Propulsé par OwnTrack
