@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Improved scripts and tests processing
+- Improved user-provided payload processing & checking
+
+### Fixed
+
+- User-provided default value autofilling for `enableRequiredCookies`
 
 ## [1.0.0-beta.3] - 2023-07-22
 

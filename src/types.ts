@@ -1,5 +1,6 @@
 import TrackingService from './TrackingService'
 
+// Core
 export type Consent = {
   value: boolean
   reviewed: boolean
@@ -18,11 +19,14 @@ export type TrackingServiceConsent = {
   r: boolean
 }
 
+// Locales
 export type LocaleDefinition = {}
 export type Locales = {
-  en: LocaleDefinition,
+  en: LocaleDefinition
   fr: LocaleDefinition
 }
+
+// User Config
 export type ConfigService = {
   name: string
   label?: string

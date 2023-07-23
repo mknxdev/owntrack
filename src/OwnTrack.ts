@@ -1,17 +1,19 @@
-import { Config, TrackingServiceContainer } from './types'
+import { TrackingServiceContainer, Locales, Config } from './types'
 import TrackingGuard from './TrackingGuard'
+import I18nProxy from './I18nProxy'
 import DOMProxy from './DOMProxy'
 import TrackingService from './TrackingService'
-import { checkForValidServiceName, fillDefaultValues } from './helpers/pApi'
+import { checkForValidServiceName } from './helpers/pApi'
 
 export default class OwnTrack {
   _trackingGuard: TrackingGuard = new TrackingGuard()
   _services: TrackingServiceContainer[] = []
+  _i18n: I18nProxy = new I18nProxy()
   _dp: DOMProxy = new DOMProxy(this._trackingGuard)
 
   constructor(config: Config) {
-    const fmtConfig = Object.assign({}, fillDefaultValues(config))
-    for (const service of fmtConfig.services)
+    console.log(config)
+    for (const service of config.services)
       this._services.push(this._trackingGuard.wrapService(service))
     this._trackingGuard.store()
     this._trackingGuard.init()

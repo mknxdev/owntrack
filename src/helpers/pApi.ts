@@ -8,8 +8,7 @@ const checkServicesConf = (services: ConfigService[]): boolean => {
   try {
     // services
     if (!services) err(`OwnTrack: 'services' is required.`)
-    if (!Array.isArray(services))
-      err(`OwnTrack: 'services' must be an array.`)
+    if (!Array.isArray(services)) err(`OwnTrack: 'services' must be an array.`)
     // services.service
     if (services) {
       for (const srv of services) {
@@ -99,14 +98,22 @@ const checkLocalesConf = (locales: Locales): boolean => {
 }
 
 export const checkForValidConfig = (config: Config): boolean => {
-  return checkServicesConf(config.services) &&
-         checkGlobalConf(config) &&
-         checkLocalesConf(config.locales)
+  return (
+    checkServicesConf(config.services) &&
+    checkGlobalConf(config) &&
+    checkLocalesConf(config.locales)
+  )
 }
 
-export const fillDefaultValues = (config: Config): Config => {
+export const fillDefaultValues = (
+  config: Config,
+  locales: LocaleDefinition = undefined,
+): Config => {
   return {
-    enableRequiredCookies: config.enableRequiredCookies || true,
+    enableRequiredCookies:
+      config.enableRequiredCookies !== undefined
+        ? config.enableRequiredCookies
+        : true,
     services: config.services.map((s) => ({
       name: s.name,
       label: s.label || undefined,
