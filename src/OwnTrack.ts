@@ -1,4 +1,4 @@
-import { TrackingServiceContainer, Locales, Config } from './types'
+import { TrackingServiceContainer, Config } from './types'
 import TrackingGuard from './TrackingGuard'
 import I18nProxy from './I18nProxy'
 import DOMProxy from './DOMProxy'
@@ -43,5 +43,10 @@ export default class OwnTrack {
     return
   }
 
-  setLocale(localeId: string): void {}
+  setLocale(localeId: string): void {
+    if (this._i18n.getLocalesIds().includes(localeId)) {
+      this._i18n.setCurrentLocale(localeId)
+      this._dp.updateLang()
+    }
+  }
 }

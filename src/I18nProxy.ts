@@ -14,6 +14,10 @@ export default class I18nProxy {
     return this._locales[this._currentLocale]
   }
   // shortcut for current locale access
+  getLocalesIds(): string[] {
+    return Object.keys(this._locales)
+  }
+  // shortcut for current locale access
   get l(): LocaleDefinition {
     return this._locales[this._currentLocale]
   }

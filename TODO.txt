@@ -10,6 +10,7 @@
 
 >>> P1
 
+- Use a dedicated renderer for more clearer code & segmented tasks
 - Remove scripts (+ possible payloads) installed by trackers if user revokes consent
 - Integrate a wording customization system
 - Provide CSS vars & OT-related classes list to allow styling customization

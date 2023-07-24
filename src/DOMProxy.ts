@@ -1,17 +1,19 @@
 import { TrackingServiceContainer } from './types'
 import { createElmt, generateIconElement, getLogoElement } from './helpers/ui'
 import { findElementChildByAttr as findChildByAttr } from './helpers/dom'
+import Renderer from './Renderer'
 import TrackingGuard from './TrackingGuard'
 import I18nProxy from './I18nProxy'
 
 export default class DOMProxy {
+  _renderer = new Renderer()
   _trackingGuard: TrackingGuard
   _i18n: I18nProxy
   _services: TrackingServiceContainer[] = []
   _triggerDisplayed = false
   _manualOpen = false
   _entryDisplayed = false
-  _settingsDisplayed = true
+  _settingsDisplayed = false
   _d: {
     r: Element
     tr: Element
@@ -381,9 +383,13 @@ export default class DOMProxy {
     this._initSettingsHeader()
     this._initSettingsServices()
     this._initSettingsFooter()
+    // this.
   }
   mount(): void {
     this._render()
-    document.body.append(this._d.r)
+    // document.body.append(this._d.r)
+  }
+  updateLang(): void {
+    console.log(this);
   }
 }
