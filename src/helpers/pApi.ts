@@ -1,4 +1,6 @@
 import { Config, ConfigService, Locales, LocaleDefinition } from '../types'
+// @ts-ignore
+import defaultLocale from '../../locales/en.yml'
 
 const err = (msg: string) => {
   throw new Error(msg)
@@ -94,6 +96,13 @@ const checkGlobalConf = (config: Config): boolean => {
 }
 
 const checkLocalesConf = (locales: Locales): boolean => {
+  try {
+    if (locales && typeof locales !== 'object')
+      err(`OwnTrack: 'locales' must be an object.`)
+  } catch (err) {
+    console.error(err.message)
+    return false
+  }
   return true
 }
 
@@ -108,14 +117,13 @@ export const checkForValidConfig = (config: Config): boolean => {
 export const fillDefaultValues = (
   config: Config,
   locales: LocaleDefinition = undefined,
-  defaultLocales: LocaleDefinition = undefined,
 ): Config => {
   return {
     enableRequiredCookies:
       config.enableRequiredCookies !== undefined
         ? config.enableRequiredCookies
         : true,
-    locales: locales || defaultLocales,
+    locales: locales || { en: defaultLocale },
     services: config.services.map((s) => ({
       name: s.name,
       label: s.label || undefined,

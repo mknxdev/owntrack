@@ -2,8 +2,6 @@ import { Locales, Config } from './types'
 import { checkForValidConfig, fillDefaultValues } from './helpers/pApi'
 import OwnTrack from './OwnTrack'
 import './css/ot.css'
-// @ts-ignore
-import defaultLocale from '../locales/en.yml'
 
 declare global {
   interface Window {
@@ -12,13 +10,13 @@ declare global {
   }
 }
 
-const getLoadedLocales = (): Locales => {
-  return window.__owntrack_locales || undefined
+const getLoadedLocales = (userLocales?: Locales): Locales => {
+  return userLocales || window.__owntrack_locales || undefined
 }
 
 export default (config: Config): OwnTrack => {
   if (!window.__owntrack && checkForValidConfig(config)) {
-    config = fillDefaultValues(config, getLoadedLocales(), defaultLocale)
+    config = fillDefaultValues(config, getLoadedLocales(config.locales))
     window.__owntrack = new OwnTrack(config)
   }
   return window.__owntrack
