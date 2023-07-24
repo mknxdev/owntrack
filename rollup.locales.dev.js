@@ -44,7 +44,7 @@ export default {
           // Browser
           if (opts.dir.includes('/locales/web'))
             code = `
-              window.__owntrack_locales = (window.__owntrack_locales || {}).${entry.name} = ${payload};
+              window.__owntrack_locales=window.__owntrack_locales||{};window.__owntrack_locales.${entry.name} = ${payload};
             `.trim()
           // ESM
           else if (opts.dir.includes('/locales/es'))

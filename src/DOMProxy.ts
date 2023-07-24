@@ -2,14 +2,16 @@ import { TrackingServiceContainer } from './types'
 import { createElmt, generateIconElement, getLogoElement } from './helpers/ui'
 import { findElementChildByAttr as findChildByAttr } from './helpers/dom'
 import TrackingGuard from './TrackingGuard'
+import I18nProxy from './I18nProxy'
 
 export default class DOMProxy {
   _trackingGuard: TrackingGuard
+  _i18n: I18nProxy
   _services: TrackingServiceContainer[] = []
   _triggerDisplayed = false
   _manualOpen = false
   _entryDisplayed = false
-  _settingsDisplayed = false
+  _settingsDisplayed = true
   _d: {
     r: Element
     tr: Element
@@ -26,8 +28,9 @@ export default class DOMProxy {
     srvr: createElmt('div'), // services root
   }
 
-  constructor(trackingGuard: TrackingGuard) {
+  constructor(trackingGuard: TrackingGuard, i18n: I18nProxy) {
     this._trackingGuard = trackingGuard
+    this._i18n = i18n
   }
   _initBase(): void {
     this._d.r = document.createElement('div')
@@ -36,7 +39,7 @@ export default class DOMProxy {
   _initTrigger(): void {
     const elTriggerContainer = createElmt('div', ['ot-trigger'])
     const elTriggerInfo = createElmt('p', ['ot-trigger__info'])
-    elTriggerInfo.innerHTML = 'Tracking<br />Protection'
+    elTriggerInfo.innerHTML = this._i18n.l.headline
     elTriggerContainer.append(getLogoElement())
     elTriggerContainer.append(elTriggerInfo)
     this._d.tr.classList.add('ot-trigger-container')
@@ -47,24 +50,23 @@ export default class DOMProxy {
     this._d.er = createElmt('div', ['ot-entry-wrapper'])
     const elEntry = createElmt('div', ['ot-entry'])
     const elEntryNotice = createElmt('div', ['ot-entry__notice'])
-    elEntryNotice.innerHTML =
-      '<p>This website uses cookies &amp; analytics for tracking and/or advertising purposes. You can choose to accept them or not.</p>'
+    elEntryNotice.innerHTML = `<p>${this._i18n.l.entry.notice}</p>`
     elEntry.append(elEntryNotice)
     const btns = [
       {
-        t: 'Settings',
+        t: this._i18n.l.buttons.settings,
         c: ['otua-settings', 'ot-btn', 'ot-ghost'],
         a: { 'data-ot-entry-ua': 'settings' },
         h: this._onSettingsOpenClick.bind(this),
       },
       {
-        t: 'Deny',
+        t: this._i18n.l.buttons.deny,
         c: ['otua-deny', 'ot-btn'],
         a: { 'data-ot-entry-ua': 'deny' },
         h: this._onEDenyAllServicesClick.bind(this),
       },
       {
-        t: 'Allow',
+        t: this._i18n.l.buttons.allow,
         c: ['otua-allow', 'ot-btn'],
         a: { 'data-ot-entry-ua': 'allow' },
         h: this._onEAllowAllServicesClick.bind(this),
@@ -109,20 +111,19 @@ export default class DOMProxy {
     const elClose = generateIconElement('close')
     elCloseBtn.append(elClose)
     const elHeadline = createElmt('h1')
-    elHeadline.innerHTML = 'Tracking Settings'
+    elHeadline.innerHTML = this._i18n.l.settings.title
     const elNotice = createElmt('p', ['ot-settings__notice'])
-    elNotice.innerHTML =
-      'Here you can manage tracking/analytics acceptance for each service.<br/> You can also accept or deny tracking for all services at once.'
+    elNotice.innerHTML = this._i18n.l.settings.notice
     const elGActions = createElmt('div', ['ot-settings__main-actions'])
     const btns = [
       {
-        t: 'Deny all',
+        t: this._i18n.l.buttons.global_deny,
         c: ['otua-deny', 'ot-btn', 'otua-deny'],
         a: { 'data-ot-settings-ua': 'deny' },
         h: this._onSDenyAllServicesClick.bind(this),
       },
       {
-        t: 'Allow all',
+        t: this._i18n.l.buttons.global_allow,
         c: ['otua-allow', 'ot-btn', 'otua-allow'],
         a: { 'data-ot-settings-ua': 'allow' },
         h: this._onSAllowAllServicesClick.bind(this),
@@ -178,13 +179,13 @@ export default class DOMProxy {
         elSrvBtns = createElmt('div', ['ot-settings__service-btns'])
         const btns = [
           {
-            t: 'Deny',
+            t: this._i18n.l.buttons.deny,
             c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
             a: { 'data-ot-settings-srv-ua': 'deny' },
             h: this._onDenyServiceClick.bind(this),
           },
           {
-            t: 'Allow',
+            t: this._i18n.l.buttons.allow,
             c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
             a: { 'data-ot-settings-srv-ua': 'allow' },
             h: this._onAllowServiceClick.bind(this),
@@ -208,7 +209,7 @@ export default class DOMProxy {
   _initSettingsFooter(): void {
     const elEntryCP = createElmt('div', ['ot-settings__cp'])
     const elEntryCPInfo = createElmt('div', ['ot-settings__cp-info'])
-    elEntryCPInfo.innerHTML = 'Powered by OwnTrack'
+    elEntryCPInfo.innerHTML = this._i18n.l.credits
     const elEntryCPLogo = createElmt('div', ['ot-settings__cp-logo'])
     elEntryCPLogo.append(getLogoElement())
     elEntryCP.append(elEntryCPInfo)
@@ -363,9 +364,9 @@ export default class DOMProxy {
     this._render()
   }
   _getServiceStateLabel(srv: TrackingServiceContainer): string {
-    if (!srv.consent.reviewed) return 'Pending'
-    if (srv.consent.value) return 'Allowed'
-    return 'Denied'
+    if (!srv.consent.reviewed) return this._i18n.l.states.pending
+    if (srv.consent.value) return this._i18n.l.states.allowed
+    return this._i18n.l.states.denied
   }
   setServices(services: TrackingServiceContainer[]): void {
     this._services = services

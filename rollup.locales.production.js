@@ -9,22 +9,29 @@ const locales = fs
 
 export default {
   input: locales,
-  output: {
-    dir: 'dist/locales',
-    format: 'es',
-  },
+  output: [
+    {
+      dir: 'dist/locales/es',
+      format: 'es',
+    },
+    {
+      dir: 'dist/locales/web',
+      format: 'es',
+    },
+  ],
   plugins: [
     {
-      name: 'yaml2json',
+      name: 'yaml2js',
       transform(content) {
         const js = YAML.load(content)
-        const sJson = JSON.stringify(JSON.stringify(js))
+        const json = JSON.stringify(JSON.stringify(js))
         return {
-          code: `export const l = ${sJson};`,
+          code: `export default ${json}`,
           map: { mappings: '' },
         }
       },
-      generateBundle(_, bundle) {
+      generateBundle(opts, bundle) {
+        const ob = []
         const od = []
         for (const [key, entry] of Object.entries(bundle)) {
           let payload = entry.code
@@ -33,16 +40,24 @@ export default {
               entry.code.indexOf('}"') + 1,
             )
             .replace(/\\"/g, '"')
-          this.emitFile({
-            type: 'asset',
-            fileName: `${entry.name}.json`,
-            source: payload,
-          })
+          let code = ''
+          // Browser
+          if (opts.dir.includes('/locales/web'))
+            code = `
+              window.__owntrack_locales=window.__owntrack_locales||{};window.__owntrack_locales.${entry.name} = ${payload};
+            `.trim()
+          // ESM
+          else if (opts.dir.includes('/locales/es'))
+            code = `export default ${payload};`
           od.push(key)
+          ob.push({
+            type: 'asset',
+            fileName: `${entry.name}.js`,
+            source: code,
+          })
         }
-        for (const o of od) {
-          delete bundle[o]
-        }
+        for (const o of od) delete bundle[o]
+        for (const o of ob) this.emitFile(o)
       },
     },
   ],

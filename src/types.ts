@@ -20,7 +20,7 @@ export type TrackingServiceConsent = {
 }
 
 // Locales
-export type LocaleDefinition = {}
+export type LocaleDefinition = any
 export type Locales = {
   en?: LocaleDefinition
   fr?: LocaleDefinition

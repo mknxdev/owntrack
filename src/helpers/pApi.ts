@@ -118,12 +118,14 @@ export const fillDefaultValues = (
   config: Config,
   locales: LocaleDefinition = undefined,
 ): Config => {
+  const defaultLocaleId = locales ? Object.keys(locales)[0] : 'en'
   return {
     enableRequiredCookies:
       config.enableRequiredCookies !== undefined
         ? config.enableRequiredCookies
         : true,
     locales: locales || { en: defaultLocale },
+    locale: config.locale || defaultLocaleId,
     services: config.services.map((s) => ({
       name: s.name,
       label: s.label || undefined,
