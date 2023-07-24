@@ -1,14 +1,13 @@
 import { TrackingServiceContainer } from './types'
 import { createElmt, generateIconElement, getLogoElement } from './helpers/ui'
 import { findElementChildByAttr as findChildByAttr } from './helpers/dom'
-import Renderer from './Renderer'
 import TrackingGuard from './TrackingGuard'
 import I18nProxy from './I18nProxy'
 
 export default class DOMProxy {
-  _renderer = new Renderer()
   _trackingGuard: TrackingGuard
   _i18n: I18nProxy
+  _localized: { el: Element, l: string }[] = []
   _services: TrackingServiceContainer[] = []
   _triggerDisplayed = false
   _manualOpen = false
@@ -41,7 +40,8 @@ export default class DOMProxy {
   _initTrigger(): void {
     const elTriggerContainer = createElmt('div', ['ot-trigger'])
     const elTriggerInfo = createElmt('p', ['ot-trigger__info'])
-    elTriggerInfo.innerHTML = this._i18n.l.headline
+    elTriggerInfo.innerHTML = 'this._i18n.l.headline'
+    this._localized.push({ el: elTriggerInfo, l: 'headline' })
     elTriggerContainer.append(getLogoElement())
     elTriggerContainer.append(elTriggerInfo)
     this._d.tr.classList.add('ot-trigger-container')
@@ -52,23 +52,26 @@ export default class DOMProxy {
     this._d.er = createElmt('div', ['ot-entry-wrapper'])
     const elEntry = createElmt('div', ['ot-entry'])
     const elEntryNotice = createElmt('div', ['ot-entry__notice'])
-    elEntryNotice.innerHTML = `<p>${this._i18n.l.entry.notice}</p>`
+    const elEntryNoticeP = createElmt('p')
+    elEntryNoticeP.innerHTML = 'this._i18n.l.entry.notice'
+    this._localized.push({ el: elEntryNoticeP, l: 'entry.notice' })
+    elEntryNotice.innerHTML = `<p>${'this._i18n.l.entry.notice'}</p>`
     elEntry.append(elEntryNotice)
     const btns = [
       {
-        t: this._i18n.l.buttons.settings,
+        t: 'this._i18n.l.buttons.settings',
         c: ['otua-settings', 'ot-btn', 'ot-ghost'],
         a: { 'data-ot-entry-ua': 'settings' },
         h: this._onSettingsOpenClick.bind(this),
       },
       {
-        t: this._i18n.l.buttons.deny,
+        t: 'this._i18n.l.buttons.deny',
         c: ['otua-deny', 'ot-btn'],
         a: { 'data-ot-entry-ua': 'deny' },
         h: this._onEDenyAllServicesClick.bind(this),
       },
       {
-        t: this._i18n.l.buttons.allow,
+        t: 'this._i18n.l.buttons.allow',
         c: ['otua-allow', 'ot-btn'],
         a: { 'data-ot-entry-ua': 'allow' },
         h: this._onEAllowAllServicesClick.bind(this),
@@ -113,19 +116,19 @@ export default class DOMProxy {
     const elClose = generateIconElement('close')
     elCloseBtn.append(elClose)
     const elHeadline = createElmt('h1')
-    elHeadline.innerHTML = this._i18n.l.settings.title
+    elHeadline.innerHTML = 'this._i18n.l.settings.title'
     const elNotice = createElmt('p', ['ot-settings__notice'])
-    elNotice.innerHTML = this._i18n.l.settings.notice
+    elNotice.innerHTML = 'this._i18n.l.settings.notice'
     const elGActions = createElmt('div', ['ot-settings__main-actions'])
     const btns = [
       {
-        t: this._i18n.l.buttons.global_deny,
+        t: 'this._i18n.l.buttons.global_deny',
         c: ['otua-deny', 'ot-btn', 'otua-deny'],
         a: { 'data-ot-settings-ua': 'deny' },
         h: this._onSDenyAllServicesClick.bind(this),
       },
       {
-        t: this._i18n.l.buttons.global_allow,
+        t: 'this._i18n.l.buttons.global_allow',
         c: ['otua-allow', 'ot-btn', 'otua-allow'],
         a: { 'data-ot-settings-ua': 'allow' },
         h: this._onSAllowAllServicesClick.bind(this),
@@ -181,13 +184,13 @@ export default class DOMProxy {
         elSrvBtns = createElmt('div', ['ot-settings__service-btns'])
         const btns = [
           {
-            t: this._i18n.l.buttons.deny,
+            t: 'this._i18n.l.buttons.deny',
             c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
             a: { 'data-ot-settings-srv-ua': 'deny' },
             h: this._onDenyServiceClick.bind(this),
           },
           {
-            t: this._i18n.l.buttons.allow,
+            t: 'this._i18n.l.buttons.allow',
             c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
             a: { 'data-ot-settings-srv-ua': 'allow' },
             h: this._onAllowServiceClick.bind(this),
@@ -211,14 +214,80 @@ export default class DOMProxy {
   _initSettingsFooter(): void {
     const elEntryCP = createElmt('div', ['ot-settings__cp'])
     const elEntryCPInfo = createElmt('div', ['ot-settings__cp-info'])
-    elEntryCPInfo.innerHTML = this._i18n.l.credits
+    elEntryCPInfo.innerHTML = 'this._i18n.l.credits'
     const elEntryCPLogo = createElmt('div', ['ot-settings__cp-logo'])
     elEntryCPLogo.append(getLogoElement())
     elEntryCP.append(elEntryCPInfo)
     elEntryCP.append(elEntryCPLogo)
     this._d.sc.append(elEntryCP)
   }
-  _render(): void {
+  _onMainTriggerClick(): void {
+    this._triggerDisplayed = false
+    this._entryDisplayed = true
+    this._manualOpen = true
+    this.render()
+  }
+  _onMainCloseClick(): void {
+    this._trackingGuard.setUnreviewedConsents(false)
+    this._services = this._trackingGuard.getTrackingServices()
+    this._triggerDisplayed = true
+    this._entryDisplayed = false
+    this._settingsDisplayed = false
+    this._manualOpen = false
+    this.render()
+  }
+  _onSettingsOpenClick(): void {
+    this._settingsDisplayed = true
+    this.render()
+  }
+  _onSettingsCloseClick(): void {
+    this._settingsDisplayed = false
+    if (!this._manualOpen) {
+      this._triggerDisplayed = this._trackingGuard.isReviewed()
+      this._entryDisplayed = !this._trackingGuard.isReviewed()
+    }
+    this.render()
+  }
+  _onEAllowAllServicesClick(): void {
+    this._trackingGuard.setConsent(true)
+    this._triggerDisplayed = true
+    this._entryDisplayed = false
+    this._services = this._trackingGuard.getTrackingServices()
+    this.render()
+  }
+  _onEDenyAllServicesClick(): void {
+    this._trackingGuard.setConsent(false)
+    this._triggerDisplayed = true
+    this._entryDisplayed = false
+    this._services = this._trackingGuard.getTrackingServices()
+    this.render()
+  }
+  _onSAllowAllServicesClick(): void {
+    this._trackingGuard.setConsent(true)
+    this._services = this._trackingGuard.getTrackingServices()
+    this.render()
+  }
+  _onSDenyAllServicesClick(): void {
+    this._trackingGuard.setConsent(false)
+    this._services = this._trackingGuard.getTrackingServices()
+    this.render()
+  }
+  _onAllowServiceClick(service: string): void {
+    this._trackingGuard.setConsent(true, service)
+    this._services = this._trackingGuard.getTrackingServices()
+    this.render()
+  }
+  _onDenyServiceClick(service: string): void {
+    this._trackingGuard.setConsent(false, service)
+    this._services = this._trackingGuard.getTrackingServices()
+    this.render()
+  }
+  _getServiceStateLabel(srv: TrackingServiceContainer): string {
+    if (!srv.consent.reviewed) return 'this._i18n.l.states.pending'
+    if (srv.consent.value) return 'this._i18n.l.states.allowed'
+    return 'this._i18n.l.states.denied'
+  }
+  render(): void {
     // base
     if (this._triggerDisplayed) {
       this._d.r.append(this._d.tr)
@@ -235,6 +304,10 @@ export default class DOMProxy {
       this._d.r.append(this._d.sr)
     } else {
       this._d.sr.remove()
+    }
+    // i18n
+    for (const elmt of this._localized) {
+      elmt.el.innerHTML = this._i18n.t(elmt.l)
     }
     // entry + settings
     const elBtnESettings = findChildByAttr(
@@ -304,72 +377,6 @@ export default class DOMProxy {
       }
     }
   }
-  _onMainTriggerClick(): void {
-    this._triggerDisplayed = false
-    this._entryDisplayed = true
-    this._manualOpen = true
-    this._render()
-  }
-  _onMainCloseClick(): void {
-    this._trackingGuard.setUnreviewedConsents(false)
-    this._services = this._trackingGuard.getTrackingServices()
-    this._triggerDisplayed = true
-    this._entryDisplayed = false
-    this._settingsDisplayed = false
-    this._manualOpen = false
-    this._render()
-  }
-  _onSettingsOpenClick(): void {
-    this._settingsDisplayed = true
-    this._render()
-  }
-  _onSettingsCloseClick(): void {
-    this._settingsDisplayed = false
-    if (!this._manualOpen) {
-      this._triggerDisplayed = this._trackingGuard.isReviewed()
-      this._entryDisplayed = !this._trackingGuard.isReviewed()
-    }
-    this._render()
-  }
-  _onEAllowAllServicesClick(): void {
-    this._trackingGuard.setConsent(true)
-    this._triggerDisplayed = true
-    this._entryDisplayed = false
-    this._services = this._trackingGuard.getTrackingServices()
-    this._render()
-  }
-  _onEDenyAllServicesClick(): void {
-    this._trackingGuard.setConsent(false)
-    this._triggerDisplayed = true
-    this._entryDisplayed = false
-    this._services = this._trackingGuard.getTrackingServices()
-    this._render()
-  }
-  _onSAllowAllServicesClick(): void {
-    this._trackingGuard.setConsent(true)
-    this._services = this._trackingGuard.getTrackingServices()
-    this._render()
-  }
-  _onSDenyAllServicesClick(): void {
-    this._trackingGuard.setConsent(false)
-    this._services = this._trackingGuard.getTrackingServices()
-    this._render()
-  }
-  _onAllowServiceClick(service: string): void {
-    this._trackingGuard.setConsent(true, service)
-    this._services = this._trackingGuard.getTrackingServices()
-    this._render()
-  }
-  _onDenyServiceClick(service: string): void {
-    this._trackingGuard.setConsent(false, service)
-    this._services = this._trackingGuard.getTrackingServices()
-    this._render()
-  }
-  _getServiceStateLabel(srv: TrackingServiceContainer): string {
-    if (!srv.consent.reviewed) return this._i18n.l.states.pending
-    if (srv.consent.value) return this._i18n.l.states.allowed
-    return this._i18n.l.states.denied
-  }
   setServices(services: TrackingServiceContainer[]): void {
     this._services = services
   }
@@ -383,13 +390,9 @@ export default class DOMProxy {
     this._initSettingsHeader()
     this._initSettingsServices()
     this._initSettingsFooter()
-    // this.
   }
   mount(): void {
-    this._render()
-    // document.body.append(this._d.r)
-  }
-  updateLang(): void {
-    console.log(this);
+    this.render()
+    document.body.append(this._d.r)
   }
 }

@@ -46,7 +46,7 @@ export default class OwnTrack {
   setLocale(localeId: string): void {
     if (this._i18n.getLocalesIds().includes(localeId)) {
       this._i18n.setCurrentLocale(localeId)
-      this._dp.updateLang()
+      this._dp.render()
     }
   }
 }
