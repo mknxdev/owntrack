@@ -42,4 +42,6 @@ export default class OwnTrack {
       return this._services.filter((s) => s.name === name)[0].ts
     return
   }
+
+  setLocale(localeId: string): void {}
 }

@@ -1,5 +1,4 @@
 import { Config, ConfigService, Locales, LocaleDefinition } from '../types'
-// @ts-ignore
 import defaultLocale from '../../locales/en.yml'
 
 const err = (msg: string) => {
