@@ -40,7 +40,6 @@ export default class DOMProxy {
   _initTrigger(): void {
     const elTriggerContainer = createElmt('div', ['ot-trigger'])
     const elTriggerInfo = createElmt('p', ['ot-trigger__info'])
-    elTriggerInfo.innerHTML = 'this._i18n.l.headline'
     this._localized.push({ el: elTriggerInfo, l: 'headline' })
     elTriggerContainer.append(getLogoElement())
     elTriggerContainer.append(elTriggerInfo)
@@ -53,25 +52,24 @@ export default class DOMProxy {
     const elEntry = createElmt('div', ['ot-entry'])
     const elEntryNotice = createElmt('div', ['ot-entry__notice'])
     const elEntryNoticeP = createElmt('p')
-    elEntryNoticeP.innerHTML = 'this._i18n.l.entry.notice'
     this._localized.push({ el: elEntryNoticeP, l: 'entry.notice' })
-    elEntryNotice.innerHTML = `<p>${'this._i18n.l.entry.notice'}</p>`
+    elEntryNotice.append(elEntryNoticeP)
     elEntry.append(elEntryNotice)
     const btns = [
       {
-        t: 'this._i18n.l.buttons.settings',
+        l: 'buttons.settings',
         c: ['otua-settings', 'ot-btn', 'ot-ghost'],
         a: { 'data-ot-entry-ua': 'settings' },
         h: this._onSettingsOpenClick.bind(this),
       },
       {
-        t: 'this._i18n.l.buttons.deny',
+        l: 'buttons.deny',
         c: ['otua-deny', 'ot-btn'],
         a: { 'data-ot-entry-ua': 'deny' },
         h: this._onEDenyAllServicesClick.bind(this),
       },
       {
-        t: 'this._i18n.l.buttons.allow',
+        l: 'buttons.allow',
         c: ['otua-allow', 'ot-btn'],
         a: { 'data-ot-entry-ua': 'allow' },
         h: this._onEAllowAllServicesClick.bind(this),
@@ -86,9 +84,9 @@ export default class DOMProxy {
     const elEntryBtns = createElmt('div', ['ot-entry__btns'])
     for (const btn of btns) {
       let elEntryBtn: Element
-      if (btn.t) {
+      if (btn.l) {
         elEntryBtn = createElmt('button', btn.c, btn.a)
-        elEntryBtn.innerHTML = btn.t
+        this._localized.push({ el: elEntryBtn, l: btn.l })
       } else if (btn.i) {
         elEntryBtn = createElmt('div', btn.c, btn.a)
         elEntryBtn.append(generateIconElement('close'))
@@ -116,19 +114,19 @@ export default class DOMProxy {
     const elClose = generateIconElement('close')
     elCloseBtn.append(elClose)
     const elHeadline = createElmt('h1')
-    elHeadline.innerHTML = 'this._i18n.l.settings.title'
+    this._localized.push({ el: elHeadline, l: 'settings.title' })
     const elNotice = createElmt('p', ['ot-settings__notice'])
-    elNotice.innerHTML = 'this._i18n.l.settings.notice'
+    this._localized.push({ el: elNotice, l: 'settings.notice' })
     const elGActions = createElmt('div', ['ot-settings__main-actions'])
     const btns = [
       {
-        t: 'this._i18n.l.buttons.global_deny',
+        l: 'buttons.global_deny',
         c: ['otua-deny', 'ot-btn', 'otua-deny'],
         a: { 'data-ot-settings-ua': 'deny' },
         h: this._onSDenyAllServicesClick.bind(this),
       },
       {
-        t: 'this._i18n.l.buttons.global_allow',
+        l: 'buttons.global_allow',
         c: ['otua-allow', 'ot-btn', 'otua-allow'],
         a: { 'data-ot-settings-ua': 'allow' },
         h: this._onSAllowAllServicesClick.bind(this),
@@ -139,7 +137,8 @@ export default class DOMProxy {
     ])
     for (const btn of btns) {
       const elEntryBtn = createElmt('button', btn.c, btn.a)
-      elEntryBtn.innerHTML = btn.t
+      elEntryBtn.innerHTML = btn.l
+      this._localized.push({ el: elEntryBtn, l: btn.l })
       elEntryBtn.addEventListener('click', btn.h)
       elGActionsBtns.append(elEntryBtn)
     }
@@ -184,13 +183,13 @@ export default class DOMProxy {
         elSrvBtns = createElmt('div', ['ot-settings__service-btns'])
         const btns = [
           {
-            t: 'this._i18n.l.buttons.deny',
+            l: 'buttons.deny',
             c: ['otua-deny', 'ot-btn', 'ot-btn-sm'],
             a: { 'data-ot-settings-srv-ua': 'deny' },
             h: this._onDenyServiceClick.bind(this),
           },
           {
-            t: 'this._i18n.l.buttons.allow',
+            l: 'buttons.allow',
             c: ['otua-allow', 'ot-btn', 'ot-btn-sm'],
             a: { 'data-ot-settings-srv-ua': 'allow' },
             h: this._onAllowServiceClick.bind(this),
@@ -198,7 +197,7 @@ export default class DOMProxy {
         ]
         for (const btn of btns) {
           const elServiceBtn = createElmt('button', btn.c, btn.a)
-          elServiceBtn.innerHTML = btn.t
+          this._localized.push({ el: elServiceBtn, l: btn.l })
           elServiceBtn.addEventListener('click', (e) => btn.h(service.name, e))
           elSrvBtns.append(elServiceBtn)
         }
@@ -214,7 +213,7 @@ export default class DOMProxy {
   _initSettingsFooter(): void {
     const elEntryCP = createElmt('div', ['ot-settings__cp'])
     const elEntryCPInfo = createElmt('div', ['ot-settings__cp-info'])
-    elEntryCPInfo.innerHTML = 'this._i18n.l.credits'
+    this._localized.push({ el: elEntryCPInfo, l: 'credits' })
     const elEntryCPLogo = createElmt('div', ['ot-settings__cp-logo'])
     elEntryCPLogo.append(getLogoElement())
     elEntryCP.append(elEntryCPInfo)
@@ -306,9 +305,8 @@ export default class DOMProxy {
       this._d.sr.remove()
     }
     // i18n
-    for (const elmt of this._localized) {
+    for (const elmt of this._localized)
       elmt.el.innerHTML = this._i18n.t(elmt.l)
-    }
     // entry + settings
     const elBtnESettings = findChildByAttr(
       this._d.r,
