@@ -1,6 +1,5 @@
 >>> P0
 
-- Integrate a locale system (fr, en) for predefined wordings
 - Add an option to disable a service in configuration
 - Allow user-defined setting (true/false) of "mandatory cookies" section
 - Allow user-defined OT storing system (LS, cookie) + data serialization

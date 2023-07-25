@@ -2,7 +2,16 @@
   "name": "owntrack",
   "version": "1.0.0-beta.3",
   "description": "A modern GDPR-compliant user-tracking protection guard that focuses on compatibility and flexibility.",
-  "keywords": ["gdpr", "tracking", "protection ", "tool", "utility", "cookie", "modern", "lightweight"],
+  "keywords": [
+    "gdpr",
+    "tracking",
+    "protection ",
+    "tool",
+    "utility",
+    "cookie",
+    "modern",
+    "lightweight"
+  ],
   "main": "dist/owntrack.min.js",
   "scripts": {
     "test": "jest -u -c jest.config.ts --verbose",
