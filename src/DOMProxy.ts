@@ -248,8 +248,6 @@ export default class DOMProxy {
     this.render()
   }
   _onEAllowAllServicesClick(): void {
-    console.log('ok');
-    
     this._trackingGuard.setConsent(true)
     this._triggerDisplayed = true
     this._entryDisplayed = false

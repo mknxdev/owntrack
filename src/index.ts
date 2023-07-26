@@ -14,7 +14,7 @@ const getLoadedLocales = (userLocales?: Locales): Locales => {
   return userLocales || window.__owntrack_locales || undefined
 }
 
-export default (config: Config): OwnTrack => {
+export default (config): OwnTrack => {
   if (!window.__owntrack && checkForValidConfig(config)) {
     config = fillDefaultValues(config, getLoadedLocales(config.locales))
     window.__owntrack = new OwnTrack(config)

@@ -21,11 +21,6 @@ export type TrackingServiceContainer = {
   consent: Consent
   ts: TrackingService
 }
-export type TrackingServiceConsent = {
-  srv: string
-  v: boolean
-  r: boolean
-}
 
 // Locales
 export type LocaleDefinition = any
@@ -37,18 +32,18 @@ export type Locales = {
 // User Config
 export type ConfigService = {
   name: string
-  label?: string
-  type?: string
-  description?: string
-  scripts?: { url: string }[]
-  onInit?: Function
-  handlers?: object
-  host?: ''
-  guard?: {
-    bypass?: false
-    anonymization?: {
-      data?: string[]
-      placeholder?: string
+  label: string
+  type: string
+  description: string
+  scripts: { url: string }[]
+  onInit: Function
+  handlers: object
+  host: ''
+  guard: {
+    bypass: false
+    anonymization: {
+      data: string[]
+      placeholder: string
     }
   }
 }

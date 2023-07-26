@@ -1,6 +1,5 @@
 import {
   ConfigService,
-  TrackingServiceConsent,
   TrackingServiceContainer,
 } from './types'
 import ls from './helpers/ls'
@@ -60,9 +59,8 @@ export default class TrackingGuard {
       this._initTaskQueue.push({ srv: name, handler: onInit, processed: false })
     const srv = new TrackingService(name, label)
     if (handlers)
-      for (const [fnName, fn] of Object.entries(handlers)) {
+      for (const [fnName, fn] of Object.entries(handlers))
         srv[fnName] = this._getWrappedTrackingFn(name, fn)
-      }
     const serviceContainer: TrackingServiceContainer = {
       isEditable: true,
       name,
@@ -73,7 +71,8 @@ export default class TrackingGuard {
         reviewed: this.isReviewed(name),
       },
       host,
-      guard: this._getComputedServiceGuard(guard),
+      // guard: this._getComputedServiceGuard(guard),
+      guard,
       ts: srv,
     }
     this._services.push(serviceContainer)
@@ -89,13 +88,7 @@ export default class TrackingGuard {
     })
   }
   _getComputedServiceGuard(guard) {
-    return {
-      bypass: true,
-      anonymization: {
-        data: [],
-        placeholder: 'test',
-      },
-    }
+    return guard
   }
   _getWrappedTrackingFn(srv: string, handler: Function) {
     return (...args: unknown[]) => {
@@ -111,11 +104,12 @@ export default class TrackingGuard {
   _execScriptTaskQueue(): void {
     this._scriptQueue = this._scriptQueue
       .map((task) => {
+        const bypass = this._services.some(s => s.name === task.srv && s.guard.bypass)
+        const execute = bypass || this.isReviewed(task.srv) && this.hasConsent(task.srv)
         if (
           !task.processed &&
           !task.attachedHandler &&
-          this.isReviewed(task.srv) &&
-          this.hasConsent(task.srv)
+          execute
         ) {
           const elScript = createScriptElmt(task.url)
           elScript.addEventListener('load', () => {
@@ -139,10 +133,11 @@ export default class TrackingGuard {
               .filter((s) => s.srv === task.srv)
               .every((s) => s.processed)
           : true
+        const bypass = this._services.some(s => s.name === task.srv && s.guard.bypass)
+        const execute = bypass || this.isReviewed(task.srv) && this.hasConsent(task.srv)
         if (
           scriptsLoaded &&
-          this.isReviewed(task.srv) &&
-          this.hasConsent(task.srv)
+          execute
         ) {
           task.handler()
           task.processed = true
@@ -167,11 +162,12 @@ export default class TrackingGuard {
               .filter((s) => s.srv === task.srv)
               .every((s) => s.processed)
           : true
+        const bypass = this._services.some(s => s.name === task.srv && s.guard.bypass)
+        const execute = bypass || this.isReviewed(task.srv) && this.hasConsent(task.srv)
         if (
           scriptsLoaded &&
           initScriptsFinished &&
-          this.isReviewed(task.srv) &&
-          this.hasConsent(task.srv)
+          execute
         ) {
           task.handler(...task.args)
           task.processed = true
