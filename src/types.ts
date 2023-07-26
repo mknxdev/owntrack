@@ -10,8 +10,8 @@ export type TrackingServiceContainer = {
   name: string
   type?: string
   description?: string
-  host: string
-  guard: {
+  host?: string
+  guard?: {
     bypass: boolean
     anonymization: {
       data: string[]

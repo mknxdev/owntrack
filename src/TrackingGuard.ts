@@ -30,17 +30,13 @@ const LS_ITEM_NAME = 'owntrack_uc'
 
 export default class TrackingGuard {
   _i18n: I18nProxy = undefined
-  _services: TrackingService[] = []
-  _consents: TrackingServiceConsent[] = []
+  _services: TrackingServiceContainer[] = []
   _scriptQueue: ScriptTask[] = []
   _initTaskQueue: InitTask[] = []
   _tasksQueue: Task[] = []
   // rc: required cookies
   _rcService: TrackingServiceContainer = undefined
 
-  constructor() {
-    this._consents = ls.getItem(LS_ITEM_NAME) || []
-  }
   wrapService({
     name,
     label,
@@ -67,8 +63,7 @@ export default class TrackingGuard {
       for (const [fnName, fn] of Object.entries(handlers)) {
         srv[fnName] = this._getWrappedTrackingFn(name, fn)
       }
-    this._services.push(srv)
-    return {
+    const serviceContainer: TrackingServiceContainer = {
       isEditable: true,
       name,
       type,
@@ -81,6 +76,17 @@ export default class TrackingGuard {
       guard: this._getComputedServiceGuard(guard),
       ts: srv,
     }
+    this._services.push(serviceContainer)
+    this._retrieveConsentsFromLS()
+    return serviceContainer
+  }
+  _retrieveConsentsFromLS() {
+    const consents = ls.getItem(LS_ITEM_NAME) || []
+    this._services = this._services.map((s) => {
+      s.consent.value = consents.filter((c) => c.srv === s.name)[0]?.v || false
+      s.consent.reviewed = consents.filter((c) => c.srv === s.name)[0]?.r || false
+      return s
+    })
   }
   _getComputedServiceGuard(guard) {
     return {
@@ -191,16 +197,11 @@ export default class TrackingGuard {
     }
   }
   store(): void {
-    const consents = this._services.map((srv: TrackingService) => ({
+    const consents = this._services.map((srv: TrackingServiceContainer) => ({
       srv: srv.name,
-      v: this._consents.some((c) => c.srv === srv.name)
-        ? this._consents.filter((c) => c.srv === srv.name)[0].v
-        : false,
-      r: this._consents.some((c) => c.srv === srv.name)
-        ? this._consents.filter((c) => c.srv === srv.name)[0].r
-        : false,
+      v: srv.consent.value,
+      r: srv.consent.reviewed
     }))
-    this._consents = consents
     ls.setItem(LS_ITEM_NAME, consents)
   }
   initQueues(): void {
@@ -210,17 +211,17 @@ export default class TrackingGuard {
   }
   setConsent(value: boolean, service = ''): void {
     if (!service)
-      for (const consent of this._consents) {
-        consent.v = value
-        consent.r = true
+      for (const srv of this._services) {
+        srv.consent.value = value
+        srv.consent.reviewed = true
       }
     else
-      this._consents = this._consents.map((consent) => {
-        if (consent.srv === service) {
-          consent.v = value
-          consent.r = true
+      this._services = this._services.map((srv) => {
+        if (srv.name === service) {
+          srv.consent.value = value
+          srv.consent.reviewed = true
         }
-        return consent
+        return srv
       })
     this.store()
     this._execScriptTaskQueue()
@@ -228,10 +229,10 @@ export default class TrackingGuard {
     this._execTaskQueue()
   }
   setUnreviewedConsents(value: boolean): void {
-    this._consents = this._consents.map((consent) => {
-      if (!consent.r) consent.v = value
-      consent.r = true
-      return consent
+    this._services = this._services.map((srv) => {
+      if (!srv.consent.reviewed) srv.consent.value = value
+      srv.consent.reviewed = true
+      return srv
     })
     this.store()
     this._execScriptTaskQueue()
@@ -242,35 +243,21 @@ export default class TrackingGuard {
     return this._rcService
   }
   getTrackingServices(): TrackingServiceContainer[] {
-    return this._services.map(
-      (srv: TrackingService): TrackingServiceContainer => ({
-        isEditable: true,
-        name: srv.name,
-        consent: {
-          value: this._consents.some((c) => c.srv === srv.name)
-            ? this._consents.filter((c) => c.srv === srv.name)[0].v
-            : false,
-          reviewed: this._consents.some((c) => c.srv === srv.name)
-            ? this._consents.filter((c) => c.srv === srv.name)[0].r
-            : false,
-        },
-        ts: srv,
-      }),
-    )
+    return this._services
   }
   isReviewed(service = ''): boolean {
-    if (!service) return this._consents.every((consent) => consent.r)
-    return !!this._consents.filter(
-      (consent) => consent.srv === service && consent.r,
+    if (!service) return this._services.every((s) => s.consent.reviewed)
+    return !!this._services.filter(
+      (s) => s.name === service && s.consent.reviewed,
     ).length
   }
   hasConsent(service = ''): boolean {
-    if (!service) return this._consents.every((consent) => consent.v)
-    return !!this._consents.filter(
-      (consent) => consent.srv === service && consent.v,
+    if (!service) return this._services.every((s) => s.consent.value)
+    return !!this._services.filter(
+      (s) => s.name === service && s.consent.value,
     ).length
   }
   hasGlobalConsent(value: boolean): boolean {
-    return this._consents.every((c) => c.v === value)
+    return this._services.every((s) => s.consent.value === value)
   }
 }
