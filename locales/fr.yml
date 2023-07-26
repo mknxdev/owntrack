@@ -13,5 +13,8 @@ entry:
 settings:
   title: Paramètres de suivi
   notice: Vous pouvez ici gérer vos paramètres de suivi pour chaque service.<br />Vous pouvez aussi tout accepter ou refuser d'un coup.
+  required_cookies:
+    title: Cookies obligatoires
+    description: Ce site web utilise certains cookies nécessaires à son fonctionnement. Ils ne peuvent pas être désactivés.
 headline: Protection<br />de suivi
 credits: Propulsé par OwnTrack

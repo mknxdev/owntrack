@@ -10,6 +10,14 @@ export type TrackingServiceContainer = {
   name: string
   type?: string
   description?: string
+  host: string
+  guard: {
+    bypass: boolean
+    anonymization: {
+      data: string[]
+      placeholder: string
+    }
+  }
   consent: Consent
   ts: TrackingService
 }
@@ -35,6 +43,14 @@ export type ConfigService = {
   scripts?: { url: string }[]
   onInit?: Function
   handlers?: object
+  host?: ''
+  guard?: {
+    bypass?: false
+    anonymization?: {
+      data?: string[]
+      placeholder?: string
+    }
+  }
 }
 export type Config = {
   enableRequiredCookies?: boolean

@@ -13,5 +13,8 @@ entry:
 settings:
   title: Tracking Settings
   notice: Here you can manage tracking/analytics acceptance for each service.<br />You can also accept or deny tracking for all services at once.
+  required_cookies:
+    title: Required cookies
+    description: This website uses some cookies needed for it to work. They cannot be disabled.
 headline: Tracking<br />Protection
 credits: Powered by OwnTrack

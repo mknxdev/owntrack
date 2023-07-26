@@ -114,18 +114,18 @@ export const checkForValidConfig = (config: Config): boolean => {
 }
 
 export const fillDefaultValues = (
-  config: Config,
+  conf: Config,
   locales: LocaleDefinition = undefined,
 ): Config => {
   const defaultLocaleId = locales ? Object.keys(locales)[0] : 'en'
   return {
     enableRequiredCookies:
-      config.enableRequiredCookies !== undefined
-        ? config.enableRequiredCookies
+      conf.enableRequiredCookies !== undefined
+        ? conf.enableRequiredCookies
         : true,
     locales: locales || { en: defaultLocale },
-    locale: config.locale || defaultLocaleId,
-    services: config.services.map((s) => ({
+    locale: conf.locale || defaultLocaleId,
+    services: conf.services.map((s) => ({
       name: s.name,
       label: s.label || undefined,
       type: s.type || undefined,
@@ -137,6 +137,14 @@ export const fillDefaultValues = (
         : undefined,
       onInit: s.onInit || undefined,
       handlers: s.handlers || undefined,
+      host: s.host || undefined,
+      guard: {
+        bypass: s.guard?.bypass || false,
+        anonymization: {
+          data: s.guard?.anonymization?.data || [],
+          placeholder: s.guard?.anonymization?.placeholder || undefined,
+        },
+      },
     })),
   }
 }

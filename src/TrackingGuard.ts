@@ -6,6 +6,7 @@ import {
 import ls from './helpers/ls'
 import { createScriptElmt } from './helpers/ui'
 import TrackingService from './TrackingService'
+import I18nProxy from './I18nProxy'
 
 type ScriptTask = {
   srv: string
@@ -28,20 +29,14 @@ type Task = {
 const LS_ITEM_NAME = 'owntrack_uc'
 
 export default class TrackingGuard {
+  _i18n: I18nProxy = undefined
   _services: TrackingService[] = []
   _consents: TrackingServiceConsent[] = []
   _scriptQueue: ScriptTask[] = []
   _initTaskQueue: InitTask[] = []
   _tasksQueue: Task[] = []
   // rc: required cookies
-  _rcService: TrackingServiceContainer = {
-    isEditable: false,
-    name: '_rc',
-    description:
-      'This website uses some cookies needed for it to work. They cannot be disabled.',
-    consent: { value: true, reviewed: true },
-    ts: new TrackingService('_rc', 'Required cookies'),
-  }
+  _rcService: TrackingServiceContainer = undefined
 
   constructor() {
     this._consents = ls.getItem(LS_ITEM_NAME) || []
@@ -54,6 +49,8 @@ export default class TrackingGuard {
     scripts,
     onInit,
     handlers,
+    host,
+    guard,
   }: ConfigService): TrackingServiceContainer {
     if (scripts)
       for (const script of scripts)
@@ -80,7 +77,18 @@ export default class TrackingGuard {
         value: this.hasConsent(name),
         reviewed: this.isReviewed(name),
       },
+      host,
+      guard: this._getComputedServiceGuard(guard),
       ts: srv,
+    }
+  }
+  _getComputedServiceGuard(guard) {
+    return {
+      bypass: true,
+      anonymization: {
+        data: [],
+        placeholder: 'test',
+      },
     }
   }
   _getWrappedTrackingFn(srv: string, handler: Function) {
@@ -166,6 +174,22 @@ export default class TrackingGuard {
       })
       .filter((task) => !task.processed)
   }
+  _initServiceGuard(name, guard): void {
+    console.log(name, guard, this)
+  }
+  initI18n(i18n: I18nProxy): void {
+    this._i18n = i18n
+    this._rcService = {
+      isEditable: false,
+      name: '_rc',
+      description: this._i18n.t('settings.required_cookies.description'),
+      consent: { value: true, reviewed: true },
+      ts: new TrackingService(
+        '_rc',
+        this._i18n.t('settings.required_cookies.title'),
+      ),
+    }
+  }
   store(): void {
     const consents = this._services.map((srv: TrackingService) => ({
       srv: srv.name,
@@ -179,7 +203,7 @@ export default class TrackingGuard {
     this._consents = consents
     ls.setItem(LS_ITEM_NAME, consents)
   }
-  init(): void {
+  initQueues(): void {
     this._execScriptTaskQueue()
     this._execInitTaskQueue()
     this._execTaskQueue()

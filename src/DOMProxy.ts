@@ -7,7 +7,7 @@ import I18nProxy from './I18nProxy'
 export default class DOMProxy {
   _trackingGuard: TrackingGuard
   _i18n: I18nProxy
-  _localized: { el: Element, l: string }[] = []
+  _localized: { el: Element; l: string }[] = []
   _services: TrackingServiceContainer[] = []
   _triggerDisplayed = false
   _manualOpen = false
@@ -282,9 +282,9 @@ export default class DOMProxy {
     this.render()
   }
   _getServiceStateLabel(srv: TrackingServiceContainer): string {
-    if (!srv.consent.reviewed) return 'this._i18n.l.states.pending'
-    if (srv.consent.value) return 'this._i18n.l.states.allowed'
-    return 'this._i18n.l.states.denied'
+    if (!srv.consent.reviewed) return this._i18n.t('states.pending')
+    if (srv.consent.value) return this._i18n.t('states.allowed')
+    return this._i18n.t('states.denied')
   }
   render(): void {
     // base
@@ -305,8 +305,7 @@ export default class DOMProxy {
       this._d.sr.remove()
     }
     // i18n
-    for (const elmt of this._localized)
-      elmt.el.innerHTML = this._i18n.t(elmt.l)
+    for (const elmt of this._localized) elmt.el.innerHTML = this._i18n.t(elmt.l)
     // entry + settings
     const elBtnESettings = findChildByAttr(
       this._d.r,
