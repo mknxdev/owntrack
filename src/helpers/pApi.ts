@@ -1,11 +1,11 @@
-import { Config, ConfigService, Locales, LocaleDefinition } from '../types'
+import { Config, UserConfig, UserConfigService, Locales, LocaleDefinition } from '../types'
 import defaultLocale from '../../locales/en.yml'
 
 const err = (msg: string) => {
   throw new Error(msg)
 }
 
-const checkServicesConf = (services: ConfigService[]): boolean => {
+const checkServicesConf = (services: UserConfigService[]): boolean => {
   try {
     // services
     if (!services) err(`OwnTrack: 'services' is required.`)
@@ -76,7 +76,7 @@ const checkServicesConf = (services: ConfigService[]): boolean => {
   return true
 }
 
-const checkGlobalConf = (config: Config): boolean => {
+const checkGlobalConf = (config: UserConfig): boolean => {
   try {
     // config
     if (!config)
@@ -105,7 +105,7 @@ const checkLocalesConf = (locales: Locales): boolean => {
   return true
 }
 
-export const checkForValidConfig = (config: Config): boolean => {
+export const checkForValidConfig = (config: UserConfig): boolean => {
   return (
     checkServicesConf(config.services) &&
     checkGlobalConf(config) &&
@@ -114,7 +114,7 @@ export const checkForValidConfig = (config: Config): boolean => {
 }
 
 export const fillDefaultValues = (
-  conf: Config,
+  conf: UserConfig,
   locales: LocaleDefinition = undefined,
 ): Config => {
   const defaultLocaleId = locales ? Object.keys(locales)[0] : 'en'

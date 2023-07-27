@@ -1,5 +1,5 @@
 import { jest, test, expect } from '@jest/globals'
-import { Config as Cfg } from '@src/types'
+import { UserConfig as UserCfg } from '@src/types'
 import {
   checkForValidConfig as checkConfig,
   checkForValidServiceName as checkServiceName,
@@ -21,8 +21,8 @@ describe('helpers.pApi.checkForValidConfig', () => {
   test('valid config (enableRequiredCookies)', () => {
     const config1 = { enableRequiredCookies: true, services: [] }
     const config2 = { enableRequiredCookies: false, services: [] }
-    expect(checkConfig(config1 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config2 as unknown as Cfg)).toBe(true)
+    expect(checkConfig(config1 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config2 as unknown as UserCfg)).toBe(true)
   })
 
   test('valid config (services)', () => {
@@ -61,13 +61,13 @@ describe('helpers.pApi.checkForValidConfig', () => {
         },
       ],
     }
-    expect(checkConfig(config1 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config2 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config3 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config4 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config5 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config6 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config7 as unknown as Cfg)).toBe(true)
+    expect(checkConfig(config1 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config2 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config3 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config4 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config5 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config6 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config7 as unknown as UserCfg)).toBe(true)
   })
 
   test('valid config (services.service.name)', () => {
@@ -75,10 +75,10 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config2 = { services: [{ name: 'g-a', onInit: () => {} }] }
     const config3 = { services: [{ name: 'g_a', onInit: () => {} }] }
     const config4 = { services: [{ name: 'g$a', onInit: () => {} }] }
-    expect(checkConfig(config1 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config2 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config3 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config4 as unknown as Cfg)).toBe(true)
+    expect(checkConfig(config1 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config2 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config3 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config4 as unknown as UserCfg)).toBe(true)
   })
 
   test('valid config (services.service.label)', () => {
@@ -97,11 +97,11 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config5 = {
       services: [{ name: 'ga', label: 'G. Analytics', onInit: () => {} }],
     }
-    expect(checkConfig(config1 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config2 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config3 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config4 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config5 as unknown as Cfg)).toBe(true)
+    expect(checkConfig(config1 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config2 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config3 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config4 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config5 as unknown as UserCfg)).toBe(true)
   })
 
   test('valid config (services.service.type)', () => {
@@ -120,11 +120,11 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config5 = {
       services: [{ name: 'ga', type: 'Analytics', onInit: () => {} }],
     }
-    expect(checkConfig(config1 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config2 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config3 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config4 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config5 as unknown as Cfg)).toBe(true)
+    expect(checkConfig(config1 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config2 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config3 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config4 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config5 as unknown as UserCfg)).toBe(true)
   })
 
   test('valid config (services.service.description)', () => {
@@ -145,11 +145,11 @@ describe('helpers.pApi.checkForValidConfig', () => {
         { name: 'ga', description: 'G. Analytics tool.', onInit: () => {} },
       ],
     }
-    expect(checkConfig(config1 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config2 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config3 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config4 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config5 as unknown as Cfg)).toBe(true)
+    expect(checkConfig(config1 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config2 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config3 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config4 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config5 as unknown as UserCfg)).toBe(true)
   })
 
   test('valid config (services.service.scripts)', () => {
@@ -159,15 +159,15 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config2 = {
       services: [{ name: 'ga', scripts: [{ url: 'url' }, { url: 'url2' }] }],
     }
-    expect(checkConfig(config1 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config2 as unknown as Cfg)).toBe(true)
+    expect(checkConfig(config1 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config2 as unknown as UserCfg)).toBe(true)
   })
 
   test('valid config (services.service.onInit)', () => {
     const config1 = {
       services: [{ name: 'ga', onInit: () => {} }],
     }
-    expect(checkConfig(config1 as unknown as Cfg)).toBe(true)
+    expect(checkConfig(config1 as unknown as UserCfg)).toBe(true)
   })
 
   test('valid config (services.service.handlers)', () => {
@@ -182,8 +182,8 @@ describe('helpers.pApi.checkForValidConfig', () => {
         },
       ],
     }
-    expect(checkConfig(config1 as unknown as Cfg)).toBe(true)
-    expect(checkConfig(config2 as unknown as Cfg)).toBe(true)
+    expect(checkConfig(config1 as unknown as UserCfg)).toBe(true)
+    expect(checkConfig(config2 as unknown as UserCfg)).toBe(true)
   })
 
   // INVALID
@@ -196,12 +196,12 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config5 = { enableRequiredCookies: {}, services: [] }
     const config6 = { enableRequiredCookies: () => {}, services: [] }
     const tests = [
-      expect(checkConfig(config1 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config2 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config3 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config4 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config5 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config6 as unknown as Cfg)).toBe(false),
+      expect(checkConfig(config1 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config2 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config3 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config4 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config5 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config6 as unknown as UserCfg)).toBe(false),
     ]
     expect(global.console.error).toHaveBeenCalledTimes(tests.length)
   })
@@ -227,15 +227,15 @@ describe('helpers.pApi.checkForValidConfig', () => {
       services: [{ name: 'ga', scripts: [{ url: () => {} }] }],
     }
     const tests = [
-      expect(checkConfig(config1 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config2 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config3 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config4 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config5 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config6 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config7 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config8 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config9 as unknown as Cfg)).toBe(false),
+      expect(checkConfig(config1 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config2 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config3 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config4 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config5 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config6 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config7 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config8 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config9 as unknown as UserCfg)).toBe(false),
     ]
     expect(global.console.error).toHaveBeenCalledTimes(tests.length)
   })
@@ -250,14 +250,14 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config7 = { services: [{ name: () => {} }] }
     const config8 = { services: [{ name: 'ga' }, { name: 'ga' }] }
     const tests = [
-      expect(checkConfig(config1 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config2 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config3 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config4 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config5 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config6 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config7 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config8 as unknown as Cfg)).toBe(false),
+      expect(checkConfig(config1 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config2 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config3 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config4 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config5 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config6 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config7 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config8 as unknown as UserCfg)).toBe(false),
     ]
     expect(global.console.error).toHaveBeenCalledTimes(tests.length)
   })
@@ -270,12 +270,12 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config5 = { services: [{ label: [] }] }
     const config6 = { services: [{ label: () => {} }] }
     const tests = [
-      expect(checkConfig(config1 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config2 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config3 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config4 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config5 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config6 as unknown as Cfg)).toBe(false),
+      expect(checkConfig(config1 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config2 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config3 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config4 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config5 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config6 as unknown as UserCfg)).toBe(false),
     ]
     expect(global.console.error).toHaveBeenCalledTimes(tests.length)
   })
@@ -288,12 +288,12 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config5 = { services: [{ type: [] }] }
     const config6 = { services: [{ type: () => {} }] }
     const tests = [
-      expect(checkConfig(config1 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config2 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config3 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config4 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config5 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config6 as unknown as Cfg)).toBe(false),
+      expect(checkConfig(config1 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config2 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config3 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config4 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config5 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config6 as unknown as UserCfg)).toBe(false),
     ]
     expect(global.console.error).toHaveBeenCalledTimes(tests.length)
   })
@@ -306,12 +306,12 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config5 = { services: [{ description: [] }] }
     const config6 = { services: [{ description: () => {} }] }
     const tests = [
-      expect(checkConfig(config1 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config2 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config3 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config4 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config5 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config6 as unknown as Cfg)).toBe(false),
+      expect(checkConfig(config1 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config2 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config3 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config4 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config5 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config6 as unknown as UserCfg)).toBe(false),
     ]
     expect(global.console.error).toHaveBeenCalledTimes(tests.length)
   })
@@ -326,14 +326,14 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config7 = { services: [{ scripts: [{}] }] }
     const config8 = { services: [{ scripts: [{}, { url: 'url' }] }] }
     const tests = [
-      expect(checkConfig(config1 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config2 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config3 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config4 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config5 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config6 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config7 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config8 as unknown as Cfg)).toBe(false),
+      expect(checkConfig(config1 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config2 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config3 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config4 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config5 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config6 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config7 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config8 as unknown as UserCfg)).toBe(false),
     ]
     expect(global.console.error).toHaveBeenCalledTimes(tests.length)
   })
@@ -345,11 +345,11 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config4 = { services: [{ onInit: {} }] }
     const config5 = { services: [{ onInit: [] }] }
     const tests = [
-      expect(checkConfig(config1 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config2 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config3 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config4 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config5 as unknown as Cfg)).toBe(false),
+      expect(checkConfig(config1 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config2 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config3 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config4 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config5 as unknown as UserCfg)).toBe(false),
     ]
     expect(global.console.error).toHaveBeenCalledTimes(tests.length)
   })
@@ -362,12 +362,12 @@ describe('helpers.pApi.checkForValidConfig', () => {
     const config5 = { services: [{ handlers: () => {} }] }
     const config6 = { services: [{ handlers: {} }] }
     const tests = [
-      expect(checkConfig(config1 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config2 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config3 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config4 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config5 as unknown as Cfg)).toBe(false),
-      expect(checkConfig(config6 as unknown as Cfg)).toBe(false),
+      expect(checkConfig(config1 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config2 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config3 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config4 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config5 as unknown as UserCfg)).toBe(false),
+      expect(checkConfig(config6 as unknown as UserCfg)).toBe(false),
     ]
     expect(global.console.error).toHaveBeenCalledTimes(tests.length)
   })
@@ -375,13 +375,13 @@ describe('helpers.pApi.checkForValidConfig', () => {
 
 describe('helpers.pApi.fillDefaultValues', () => {
   test('all empty values', () => {
-    const config1: Cfg = {
+    const config1: UserCfg = {
       services: [{ name: 'ga', scripts: [{ url: 'url' }] }],
     }
-    const config2: Cfg = {
+    const config2: UserCfg = {
       services: [{ name: 'ga', onInit: () => {} }],
     }
-    const config3: Cfg = {
+    const config3: UserCfg = {
       services: [{ name: 'ga', handlers: { trackingFn: () => {} } }],
     }
     expect(fillDefault(config1)).toEqual({
@@ -429,7 +429,7 @@ describe('helpers.pApi.fillDefaultValues', () => {
   })
 
   test('all filled values', () => {
-    const config1: Cfg = {
+    const config1: UserCfg = {
       enableRequiredCookies: true,
       services: [
         {
@@ -449,7 +449,7 @@ describe('helpers.pApi.fillDefaultValues', () => {
   })
 
   test('optional field (enableRequiredCookies)', () => {
-    const config1: Cfg = {
+    const config1: UserCfg = {
       services: [{ name: 'ga', onInit: () => {} }],
     }
     expect(fillDefault(config1)).toEqual({

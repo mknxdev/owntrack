@@ -51,3 +51,26 @@ export type Config = {
   locale?: string
   locales?: Locales
 }
+export type UserConfigService = {
+  name: string
+  label?: string
+  type?: string
+  description?: string
+  scripts?: { url: string }[]
+  onInit?: Function
+  handlers?: object
+  host?: ''
+  guard?: {
+    bypass?: false
+    anonymization?: {
+      data?: string[]
+      placeholder?: string
+    }
+  }
+}
+export type UserConfig = {
+  enableRequiredCookies?: boolean
+  services: UserConfigService[]
+  locale?: string
+  locales?: Locales
+}
