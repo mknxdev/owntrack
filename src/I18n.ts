@@ -1,6 +1,6 @@
 import { LocaleDefinition, Locales } from './types'
 
-export default class I18nProxy {
+export default class I18n {
   _locales: Locales
   _currentLocale: string
 
@@ -20,8 +20,7 @@ export default class I18nProxy {
   _findLocale(key: string, locales?: object): string {
     const l = locales || this.getCurrentLocale()
     const index = key.indexOf('.')
-    if (index === -1)
-      return l[key]
+    if (index === -1) return l[key]
     return this._findLocale(key.slice(index + 1), l[key.slice(0, index)])
   }
   // shortcut for current locale access

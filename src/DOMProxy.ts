@@ -2,11 +2,11 @@ import { TrackingServiceContainer } from './types'
 import { createElmt, generateIconElement, getLogoElement } from './helpers/ui'
 import { findElementChildByAttr as findChildByAttr } from './helpers/dom'
 import TrackingGuard from './TrackingGuard'
-import I18nProxy from './I18nProxy'
+import I18n from './I18n'
 
 export default class DOMProxy {
   _trackingGuard: TrackingGuard
-  _i18n: I18nProxy
+  _i18n: I18n
   _localized: { el: Element; l: string }[] = []
   _services: TrackingServiceContainer[] = []
   _triggerDisplayed = false
@@ -29,7 +29,7 @@ export default class DOMProxy {
     srvr: createElmt('div'), // services root
   }
 
-  constructor(trackingGuard: TrackingGuard, i18n: I18nProxy) {
+  constructor(trackingGuard: TrackingGuard, i18n: I18n) {
     this._trackingGuard = trackingGuard
     this._i18n = i18n
   }

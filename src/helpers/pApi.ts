@@ -142,7 +142,7 @@ export const fillDefaultValues = (
         bypass: s.guard?.bypass || false,
         anonymization: {
           data: s.guard?.anonymization?.data || [],
-          placeholder: s.guard?.anonymization?.placeholder || undefined,
+          placeholder: s.guard?.anonymization?.placeholder || 'unknown',
         },
       },
     })),

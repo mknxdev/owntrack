@@ -1,11 +1,9 @@
-import {
-  ConfigService,
-  TrackingServiceContainer,
-} from './types'
+import { ConfigService, TrackingServiceContainer } from './types'
 import ls from './helpers/ls'
 import { createScriptElmt } from './helpers/ui'
 import TrackingService from './TrackingService'
-import I18nProxy from './I18nProxy'
+import I18n from './I18n'
+import RequestProxy from './RequestProxy'
 
 type ScriptTask = {
   srv: string
@@ -28,13 +26,18 @@ type Task = {
 const LS_ITEM_NAME = 'owntrack_uc'
 
 export default class TrackingGuard {
-  _i18n: I18nProxy = undefined
+  _reqProxy: RequestProxy = undefined
+  _i18n: I18n = undefined
   _services: TrackingServiceContainer[] = []
   _scriptQueue: ScriptTask[] = []
   _initTaskQueue: InitTask[] = []
   _tasksQueue: Task[] = []
   // rc: required cookies
   _rcService: TrackingServiceContainer = undefined
+
+  constructor() {
+    this._reqProxy = new RequestProxy()
+  }
 
   wrapService({
     name,
@@ -77,13 +80,19 @@ export default class TrackingGuard {
     }
     this._services.push(serviceContainer)
     this._retrieveConsentsFromLS()
+    this._reqProxy.setService(
+      name,
+      guard.anonymization.data,
+      guard.anonymization.placeholder,
+    )
     return serviceContainer
   }
   _retrieveConsentsFromLS() {
     const consents = ls.getItem(LS_ITEM_NAME) || []
     this._services = this._services.map((s) => {
       s.consent.value = consents.filter((c) => c.srv === s.name)[0]?.v || false
-      s.consent.reviewed = consents.filter((c) => c.srv === s.name)[0]?.r || false
+      s.consent.reviewed =
+        consents.filter((c) => c.srv === s.name)[0]?.r || false
       return s
     })
   }
@@ -104,13 +113,12 @@ export default class TrackingGuard {
   _execScriptTaskQueue(): void {
     this._scriptQueue = this._scriptQueue
       .map((task) => {
-        const bypass = this._services.some(s => s.name === task.srv && s.guard.bypass)
-        const execute = bypass || this.isReviewed(task.srv) && this.hasConsent(task.srv)
-        if (
-          !task.processed &&
-          !task.attachedHandler &&
-          execute
-        ) {
+        const bypass = this._services.some(
+          (s) => s.name === task.srv && s.guard.bypass,
+        )
+        const execute =
+          bypass || (this.isReviewed(task.srv) && this.hasConsent(task.srv))
+        if (!task.processed && !task.attachedHandler && execute) {
           const elScript = createScriptElmt(task.url)
           elScript.addEventListener('load', () => {
             task.processed = true
@@ -133,12 +141,12 @@ export default class TrackingGuard {
               .filter((s) => s.srv === task.srv)
               .every((s) => s.processed)
           : true
-        const bypass = this._services.some(s => s.name === task.srv && s.guard.bypass)
-        const execute = bypass || this.isReviewed(task.srv) && this.hasConsent(task.srv)
-        if (
-          scriptsLoaded &&
-          execute
-        ) {
+        const bypass = this._services.some(
+          (s) => s.name === task.srv && s.guard.bypass,
+        )
+        const execute =
+          bypass || (this.isReviewed(task.srv) && this.hasConsent(task.srv))
+        if (scriptsLoaded && execute) {
           task.handler()
           task.processed = true
           this._execTaskQueue()
@@ -162,13 +170,12 @@ export default class TrackingGuard {
               .filter((s) => s.srv === task.srv)
               .every((s) => s.processed)
           : true
-        const bypass = this._services.some(s => s.name === task.srv && s.guard.bypass)
-        const execute = bypass || this.isReviewed(task.srv) && this.hasConsent(task.srv)
-        if (
-          scriptsLoaded &&
-          initScriptsFinished &&
-          execute
-        ) {
+        const bypass = this._services.some(
+          (s) => s.name === task.srv && s.guard.bypass,
+        )
+        const execute =
+          bypass || (this.isReviewed(task.srv) && this.hasConsent(task.srv))
+        if (scriptsLoaded && initScriptsFinished && execute) {
           task.handler(...task.args)
           task.processed = true
         }
@@ -179,7 +186,7 @@ export default class TrackingGuard {
   _initServiceGuard(name, guard): void {
     console.log(name, guard, this)
   }
-  initI18n(i18n: I18nProxy): void {
+  initI18n(i18n: I18n): void {
     this._i18n = i18n
     this._rcService = {
       isEditable: false,
@@ -196,7 +203,7 @@ export default class TrackingGuard {
     const consents = this._services.map((srv: TrackingServiceContainer) => ({
       srv: srv.name,
       v: srv.consent.value,
-      r: srv.consent.reviewed
+      r: srv.consent.reviewed,
     }))
     ls.setItem(LS_ITEM_NAME, consents)
   }
@@ -204,6 +211,9 @@ export default class TrackingGuard {
     this._execScriptTaskQueue()
     this._execInitTaskQueue()
     this._execTaskQueue()
+  }
+  initRequestInterceptors() {
+    this._reqProxy.init()
   }
   setConsent(value: boolean, service = ''): void {
     if (!service)
@@ -249,9 +259,8 @@ export default class TrackingGuard {
   }
   hasConsent(service = ''): boolean {
     if (!service) return this._services.every((s) => s.consent.value)
-    return !!this._services.filter(
-      (s) => s.name === service && s.consent.value,
-    ).length
+    return !!this._services.filter((s) => s.name === service && s.consent.value)
+      .length
   }
   hasGlobalConsent(value: boolean): boolean {
     return this._services.every((s) => s.consent.value === value)

@@ -5,6 +5,11 @@ export type Consent = {
   value: boolean
   reviewed: boolean
 }
+export type LocaleDefinition = any
+export type Locales = {
+  en?: LocaleDefinition
+  fr?: LocaleDefinition
+}
 export type TrackingServiceContainer = {
   isEditable: boolean
   name: string
@@ -20,13 +25,6 @@ export type TrackingServiceContainer = {
   }
   consent: Consent
   ts: TrackingService
-}
-
-// Locales
-export type LocaleDefinition = any
-export type Locales = {
-  en?: LocaleDefinition
-  fr?: LocaleDefinition
 }
 
 // User Config
